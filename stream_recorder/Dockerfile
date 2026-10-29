@@ -1,6 +1,6 @@
 FROM ghcr.io/home-assistant/base:latest
 
-ARG BUILD_VERSION=2.0.0
+ARG BUILD_VERSION=2.0.1
 ARG BUILD_ARCH=amd64
 
 # Python aus den Alpine-Paketen, Bibliotheken per pip (alle rein in Python, nichts zu kompilieren)

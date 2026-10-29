@@ -231,10 +231,19 @@ dialog.wide { width: min(940px, calc(100vw - 24px)); }
 @media (max-width: 760px) { .tag-grid { grid-template-columns: minmax(0, 1fr); } .lib-head .right { margin-left: 0; } }
 @media (max-width: 700px) { .target { margin-left: 0; } .who { margin-left: 0; } }
 /* ---------- 2.0: Spenden, Papierkorb, feste Ordner ---------- */
+.donate-wrap { position: relative; display: inline-flex; }
 .donate { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; min-height: 30px;
-  color: var(--ink); text-decoration: none; font-weight: 600; font-size: 13px; background: var(--surface); }
+  color: var(--ink); text-decoration: none; font-weight: 600; font-size: 13px; background: var(--surface); white-space: nowrap; }
 .donate svg { color: var(--accent); }
 .donate:hover { background: var(--hover); }
+.donate-tip { position: absolute; right: 0; top: calc(100% + 8px); width: 250px; z-index: 60; padding: 10px 12px; border-radius: 8px;
+  background: var(--surface); color: var(--ink); border: 1px solid var(--border); box-shadow: var(--shadow); font-size: 13px; line-height: 1.45; font-weight: 400;
+  opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .15s, transform .15s, visibility .15s; pointer-events: none; white-space: normal; }
+.donate-tip::before { content: ""; position: absolute; right: 22px; top: -6px; width: 10px; height: 10px; background: var(--surface);
+  border-left: 1px solid var(--border); border-top: 1px solid var(--border); transform: rotate(45deg); }
+.donate-wrap:hover .donate-tip, .donate:focus-visible + .donate-tip { opacity: 1; visibility: visible; transform: none; }
+@media (prefers-reduced-motion: reduce) { .donate-tip { transition: none; } }
+@media (max-width: 700px) { .donate-tip { right: auto; left: 0; } .donate-tip::before { right: auto; left: 22px; } }
 .btn .count { font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); }
 code.ro { display: block; font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px dashed var(--field-border); color: var(--ink);
   background: var(--hover); overflow-wrap: anywhere; }
@@ -259,7 +268,7 @@ code.ro { display: block; font-size: 13px; padding: 8px 10px; border-radius: 8px
     <div class="who">
       <span><span class="dot" id="schedDot"></span> <span id="schedText">verbinde …</span></span>
       <span id="userBox">angemeldet als <b id="userName">–</b></span>
-      <a class="donate" id="donateBtn" href="https://paypal.me/breitide" target="_blank" rel="noopener" title="Gefällt Dir die App? Über eine Spende freue ich mich."><svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span>Spenden</span></a>
+      <span class="donate-wrap"><a class="donate" id="donateBtn" href="https://paypal.me/breitide" target="_blank" rel="noopener" aria-describedby="donateTip"><svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span data-en="Donate">Unterstützen</span></a><span class="donate-tip" id="donateTip" role="tooltip">Danke für Deine Unterstützung, über eine kleine Spende würde ich mich freuen.</span></span>
       <button class="btn small" id="logoutBtn" hidden>Abmelden</button>
     </div>
   </div>

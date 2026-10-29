@@ -1,5 +1,14 @@
 # Changelog
 
+## 2.0.1 – 2026-10-29
+
+- **Geändert:** Der Knopf oben rechts in der Menüzeile heißt jetzt **„Unterstützen“**
+  (Englisch „Donate“). Beim Überfahren mit der Maus (oder bei Tastatur-Fokus) erscheint ein
+  kleines Overlay: „Danke für Deine Unterstützung, über eine kleine Spende würde ich mich
+  freuen.“ / „Thank you for your support. I would be happy about a small donation.“
+  Der Link öffnet weiterhin https://paypal.me/breitide in einem neuen Tab.
+- Gleiche Gestaltung wie in Home Assistant Cleanup.
+
 ## 2.0.0 – 2026-10-29
 
 Der Stream-Recorder ist jetzt eine **App für Home Assistant**. Die Mac-Version (1.x) wird

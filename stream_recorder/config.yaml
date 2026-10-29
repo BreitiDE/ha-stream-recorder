@@ -1,5 +1,5 @@
 name: Stream Recorder
-version: "2.0.0"
+version: "2.0.1"
 slug: stream_recorder
 description: >-
   Record MP3 web radio streams on a schedule – track list and chapters from the

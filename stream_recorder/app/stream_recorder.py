@@ -49,7 +49,7 @@ import i18n  # noqa: E402
 import library as lib  # noqa: E402
 from i18n import _  # noqa: E402
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 BASE = Path(__file__).resolve().parent
 WEB = BASE / "web"
 log = logging.getLogger("stream-recorder")
