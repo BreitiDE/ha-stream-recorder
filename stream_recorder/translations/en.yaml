@@ -1,0 +1,24 @@
+configuration:
+  storage_path:
+    name: Storage folder
+    description: >-
+      Folder for recordings (record/), single tracks (title/) and the trash (deleted/).
+      Must be below /media or /share. Default: /media/stream-recorder. A network share
+      added under Settings › System › Storage (usage "Media") appears under /media.
+  username:
+    name: Username (direct access)
+    description: >-
+      Only needed for direct access in the browser without Home Assistant (port below).
+      The sidebar of Home Assistant works without it.
+  password:
+    name: Password (direct access)
+    description: >-
+      Password for direct access. Leave username or password empty to switch direct access off.
+  log_level:
+    name: Log level
+    description: >-
+      Detail of the app log (view "Log" in the app). Nothing is written to the Home Assistant log.
+network:
+  8765/tcp: >-
+    Direct access in the browser with own login (optional). Enter a port, e.g. 8765,
+    and set username and password above. Empty = only via the Home Assistant sidebar.

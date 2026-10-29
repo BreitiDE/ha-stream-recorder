@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stream-Recorder – Anmeldung</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+/* Farbsystem: FARBDESIGN.md, Akzent #ce6c00 */
+:root { color-scheme: light; --page:#f9f9f7; --surface:#fcfcfb; --field:#ffffff; --ink:#0b0b0b; --ink-2:#52514e; --muted:#6b6a65;
+  --border:rgba(11,11,11,.10); --field-border:rgba(11,11,11,.20); --accent:#ce6c00; --on-accent:#0b0b0b;
+  --crit-bg:rgba(208,59,59,.10); --crit-text:#a62a2a; }
+@media (prefers-color-scheme: dark) { :root { color-scheme: dark; --page:#0d0d0d; --surface:#1a1a19; --field:#232322; --ink:#f0efec;
+  --ink-2:#c3c2b7; --muted:#9a998f; --border:rgba(255,255,255,.10); --field-border:rgba(255,255,255,.20);
+  --crit-bg:rgba(208,59,59,.18); --crit-text:#f08a8a; } }
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px 16px;
+  background: var(--page); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+form { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 32px 28px; display: flex; flex-direction: column; gap: 16px; }
+.brand { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 6px; }
+h1 { font-size: 20px; font-weight: 650; margin: 0; }
+.brand p { margin: 0; color: var(--ink-2); font-size: 13px; }
+label { font-size: 13px; color: var(--ink-2); display: flex; flex-direction: column; gap: 6px; }
+input[type=text], input[type=password] { font: inherit; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--field-border);
+  background: var(--field); color: var(--ink); }
+input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.check { flex-direction: row; align-items: center; gap: 8px; }
+.check input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+button { font: inherit; font-weight: 600; min-height: 44px; border-radius: 8px; border: 0; background: var(--accent); color: var(--on-accent); cursor: pointer; }
+.alert { margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--crit-bg); color: var(--crit-text); font-size: 13px;
+  display: flex; gap: 8px; align-items: flex-start; }
+.alert svg { width: 16px; height: 16px; flex: none; margin-top: 1px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.hint { margin: 0; text-align: center; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<form method="post" action="login">
+  <div class="brand">
+    <svg width="44" height="44" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#ce6c00"/><circle cx="16" cy="16" r="6" fill="none" stroke="#0b0b0b" stroke-width="2.5"/><circle cx="16" cy="16" r="2.5" fill="#0b0b0b"/></svg>
+    <h1>Stream-Recorder</h1>
+    <p>Bitte anmelden</p>
+  </div>
+  <label>Benutzername<input name="username" type="text" autocomplete="username" autocapitalize="none" required autofocus></label>
+  <label>Passwort<input name="password" type="password" autocomplete="current-password" required></label>
+  <label class="check"><input type="checkbox" name="remember" value="1">Angemeldet bleiben (30 Tage)</label>
+  <!--ERROR-->
+  <button type="submit">Anmelden</button>
+  <p class="hint">Nach 5 Fehlversuchen 5 Minuten Sperre</p>
+</form>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stream Recorder – User manual</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+/* Farbsystem: FARBDESIGN.md, Akzent #ce6c00 */
+:root {
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#6b6a65;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --hover:rgba(11,11,11,.04);
+  --accent:#ce6c00; --accent-text:#a45502; --on-accent:#0b0b0b; --accent-soft:rgba(206,108,0,.12);
+  --good-bg:rgba(12,163,12,.12); --good-text:#086b08; --warn-bg:rgba(250,178,25,.18); --warn-text:#7a5200;
+  --crit-bg:rgba(208,59,59,.12); --crit-text:#a62a2a; --code-bg:rgba(11,11,11,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#9a998f;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.05);
+    --accent-text:#e09156; --accent-soft:rgba(206,108,0,.18);
+    --good-bg:rgba(12,163,12,.18); --good-text:#6fd36f; --warn-bg:rgba(250,178,25,.16); --warn-text:#f5c860;
+    --crit-bg:rgba(208,59,59,.18); --crit-text:#f08a8a; --code-bg:rgba(255,255,255,.07);
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--accent-text); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+header.top { background: var(--surface); border-bottom: 1px solid var(--border); }
+header.top .in { max-width: 1180px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 18px; }
+.brand span { color: var(--ink-2); font-weight: 500; }
+.back { margin-left: auto; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); text-decoration: none; }
+.back:hover, .lang:hover { background: var(--hover); }
+.lang { margin-left: auto; font-size: 14px; padding: 7px 12px; border-radius: 8px; color: var(--ink-2); text-decoration: none; }
+.lang + .back { margin-left: 0; }
+.layout { max-width: 1180px; margin: 0 auto; padding: 24px 20px 64px; display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+nav.toc { flex: 1 1 220px; max-width: 260px; position: sticky; top: 16px; font-size: 14px; }
+nav.toc h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+nav.toc li { counter-increment: t; }
+nav.toc a { display: block; padding: 5px 10px; border-radius: 6px; color: var(--ink-2); text-decoration: none; }
+nav.toc a::before { content: counter(t) ". "; color: var(--muted); }
+nav.toc a:hover { background: var(--hover); color: var(--ink); }
+main { flex: 999 1 560px; min-width: 0; }
+h1 { font-size: 30px; line-height: 1.2; letter-spacing: -.02em; margin: 0 0 8px; }
+.lead { color: var(--ink-2); font-size: 17px; margin: 0 0 28px; max-width: 70ch; }
+section { margin-bottom: 44px; }
+h2.sec { font-size: 22px; letter-spacing: -.01em; margin: 0 0 12px; padding-top: 8px; border-top: 1px solid var(--grid); }
+h3 { font-size: 16px; margin: 22px 0 6px; }
+p, li { max-width: 75ch; }
+ul, ol { padding-left: 22px; }
+li { margin: 3px 0; }
+code, kbd { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+pre code { background: none; padding: 0; }
+figure { margin: 18px 0 24px; }
+figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+figure.narrow img { max-width: min(560px, 100%); }
+figcaption { color: var(--muted); font-size: 13px; margin-top: 8px; }
+.steps { counter-reset: s; list-style: none; padding: 0; }
+.steps > li { counter-increment: s; position: relative; padding-left: 40px; margin: 12px 0; }
+.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.table-wrap { overflow-x: auto; margin: 12px 0 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th { text-align: left; color: var(--muted); font-weight: 500; font-size: 13px; padding: 7px 10px; border-bottom: 1px solid var(--axis); }
+td { padding: 8px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+td:first-child { white-space: nowrap; }
+.note { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 12px 16px; margin: 16px 0; }
+.note b:first-child { display: block; margin-bottom: 2px; }
+.note.tip { background: var(--accent-soft); border-color: transparent; }
+.note.warn { background: var(--warn-bg); border-color: transparent; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.ok { background: var(--good-bg); color: var(--good-text); }
+.pill.aborted { background: var(--warn-bg); color: var(--warn-text); }
+.pill.error { background: var(--crit-bg); color: var(--crit-text); }
+.ui { font-weight: 600; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--grid); padding-top: 16px; }
+@media (max-width: 820px) { nav.toc { position: static; max-width: none; } }
+@media print {
+  header.top .back, nav.toc { display: none; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .layout { display: block; padding: 0; }
+  section { break-inside: auto; }
+  figure { break-inside: avoid; }
+  a { color: inherit; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="in">
+    <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#ce6c00"/><circle cx="16" cy="16" r="6" fill="none" stroke="#0b0b0b" stroke-width="2.5"/><circle cx="16" cy="16" r="2.5" fill="#0b0b0b"/></svg>Stream Recorder <span>· User manual</span></div>
+    <a class="lang" href="manual?lang=de">Deutsch</a>
+    <a class="back" href="./">← back to the app</a>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Contents">
+  <h2>Contents</h2>
+  <ol>
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#installation">Installation</a></li>
+    <li><a href="#access">Opening and signing in</a></li>
+    <li><a href="#interface">The interface</a></li>
+    <li><a href="#stations">Setting up stations</a></li>
+    <li><a href="#job">Planning a recording</a></li>
+    <li><a href="#now">Recording now</a></li>
+    <li><a href="#running">Managing jobs</a></li>
+    <li><a href="#done">Finished recordings</a></li>
+    <li><a href="#recordings">Managing and cutting recordings</a></li>
+    <li><a href="#trash">Trash and empty folders</a></li>
+    <li><a href="#folders">Folders and file names</a></li>
+    <li><a href="#tags">ID3 tags and track list</a></li>
+    <li><a href="#ha">Home Assistant: sensors, events, commands</a></li>
+    <li><a href="#log">Log</a></li>
+    <li><a href="#trouble">Troubleshooting</a></li>
+    <li><a href="#reference">Quick reference</a></li>
+  </ol>
+</nav>
+
+<main>
+<h1>User manual</h1>
+<p class="lead">Stream Recorder is an app for Home Assistant. It records internet radio streams at fixed times and stores them as MP3 files in the media folder. You use it from the Home Assistant sidebar, on a computer, tablet or phone.</p>
+
+<!-- ================================================================== -->
+<section id="overview">
+<h2 class="sec">1. Overview</h2>
+<p>This is how a recording works:</p>
+<ol class="steps">
+  <li><b>Add a station.</b> You save the address of a stream once under a name, e.g. “sunshine live Lounge”.</li>
+  <li><b>Create a job.</b> You set when and how long to record, optionally with pre-/post-roll and repeat.</li>
+  <li><b>Done.</b> At the start time the recorder connects to the stream and saves it unchanged. At the end the file is in <code>/media/stream-recorder/record</code> and the result is listed under <span class="ui">Done</span>.</li>
+</ol>
+<p>The recorder runs as an app in the background of Home Assistant. The interface does not need to be open, it is only for planning and checking.</p>
+<div class="note tip"><b>Good to know</b>The recording is not re-encoded. The file has exactly the quality of the stream, e.g. MP3 at 192 kbit/s. One hour at 192 kbit/s takes about 86 MB.</div>
+</section>
+
+<!-- ================================================================== -->
+<section id="installation">
+<h2 class="sec">2. Installation</h2>
+<p>The app needs Home Assistant OS or a Supervised installation, i.e. an installation with an App Store (formerly “Add-on Store”).</p>
+<ol class="steps">
+  <li>In Home Assistant open <i>Settings › Apps › App Store</i>.</li>
+  <li>Choose <i>Repositories</i> in the three-dot menu at the top right and add <code>https://github.com/BreitiDE/ha-stream-recorder</code>.</li>
+  <li><b>Stream Recorder</b> appears at the bottom of the list. Open it and click <span class="ui">Install</span>.</li>
+  <li>Optionally set the storage folder and direct access under <span class="ui">Configuration</span> (see below).</li>
+  <li>Click <span class="ui">Start</span> and turn on <span class="ui">Show in sidebar</span>.</li>
+</ol>
+<h3>App configuration</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Option</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Storage folder</td><td>Default <code>/media/stream-recorder</code>. Must be below <code>/media</code> or <code>/share</code>. The app creates the folders <code>record</code>, <code>title</code> and <code>deleted</code> in it</td></tr>
+<tr><td>Username, password</td><td>only for direct access without Home Assistant. Both empty = direct access off</td></tr>
+<tr><td>Log level</td><td>how detailed the app writes its own log: <code>debug</code>, <code>info</code> (default), <code>warning</code>, <code>error</code></td></tr>
+<tr><td>Network: port</td><td>port for direct access, e.g. <code>8765</code>. Empty = sidebar only</td></tr>
+</tbody></table></div>
+<p>Restart the app after changing the configuration.</p>
+<div class="note"><b>Recordings on a NAS</b>Under <i>Settings › System › Storage</i> add a network share with the usage <b>Media</b>, e.g. named <code>nas</code>. It then appears as <code>/media/nas</code>. Enter <code>/media/nas/stream-recorder</code> as the app's storage folder.</div>
+<p>Home Assistant shows <b>updates</b> like for any app. Jobs, stations, settings and recordings are kept. Running recordings are stopped, so better update between two recordings. The Home Assistant backup includes the app's database; recordings in the media folder only if you include the media folder in the backup.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="access">
+<h2 class="sec">3. Opening and signing in</h2>
+<h3>From the sidebar (recommended)</h3>
+<p>Click <span class="ui">Stream Recorder</span> in the Home Assistant sidebar. There is no separate sign-in here, Home Assistant has already signed you in. Your Home Assistant name is shown at the top right. This also works in the companion app and remotely via Nabu Casa.</p>
+<h3>Directly in the browser (optional)</h3>
+<p>To open the interface without Home Assistant, enter a username, password and port, e.g. <code>8765</code>, in the app configuration. Then open <code>http://&lt;Home-Assistant-IP&gt;:8765/</code> and sign in.</p>
+<figure class="narrow"><img src="manual/en/login.png" width="500" height="560" alt="Sign-in page with fields for username and password" loading="lazy">
+<figcaption>The sign-in page for direct access</figcaption></figure>
+<ul>
+  <li><span class="ui">Stay signed in</span> keeps you signed in for 30 days. Without it the session ends after 12 hours.</li>
+  <li>After <b>5 failed attempts</b> within 5 minutes, signing in from this device is locked for 5 minutes.</li>
+  <li>If username or password change in the configuration, all existing sessions become invalid.</li>
+  <li><span class="ui">Sign out</span> at the top right only exists for direct access.</li>
+</ul>
+<div class="note warn"><b>Home network only</b>Direct access does not use HTTPS. Do not forward the port in your router. When away from home, use the Home Assistant sidebar.</div>
+</section>
+
+<!-- ================================================================== -->
+<section id="interface">
+<h2 class="sec">4. The interface</h2>
+<figure><img src="manual/en/uebersicht.png" width="1280" height="1267" alt="Main page with menu, action buttons, statistics, list of jobs and list of finished recordings" loading="lazy">
+<figcaption>The main page: menu and actions at the top, then statistics, jobs and done</figcaption></figure>
+<h3>Header and menu</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Element</th><th>Function</th></tr></thead>
+<tbody>
+<tr><td class="ui">Jobs</td><td>main page with statistics, planned and finished recordings</td></tr>
+<tr><td class="ui">Recordings</td><td>all files: play, edit tags, rename, cut, delete (<a href="#recordings">section 10</a>)</td></tr>
+<tr><td class="ui">Stations</td><td>add, test, change and delete saved streams</td></tr>
+<tr><td class="ui">Settings</td><td>language, trash, file names, pre-/post-roll, cutting single tracks, system info</td></tr>
+<tr><td class="ui">Log</td><td>the latest entries of the app log</td></tr>
+<tr><td class="ui">Manual</td><td>this page. <span class="ui">← back to the app</span> at the top right returns</td></tr>
+<tr><td>Status dot</td><td>green = ready, orange = recording, red = app not reachable</td></tr>
+<tr><td class="ui">Donate</td><td>Do you like the app? I'd be happy about a donation via PayPal</td></tr>
+</tbody></table></div>
+<h3>Actions and statistics</h3>
+<ul>
+  <li><span class="ui">New job</span>: plan a recording (<a href="#job">section 6</a>), <span class="ui">Record now</span>: start right away (<a href="#now">section 7</a>).</li>
+  <li>Next to them you see the folder the recordings go to.</li>
+</ul>
+<div class="table-wrap"><table>
+<thead><tr><th>Tile</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Planned</td><td>number of waiting jobs and start time of the next one (including pre-roll)</td></tr>
+<tr><td>Running</td><td>running recordings and their combined data rate</td></tr>
+<tr><td>Successful</td><td>successful recordings in the last 30 days</td></tr>
+<tr><td>Stopped / errors</td><td>both numbers for the last 30 days</td></tr>
+<tr><td>Recorded</td><td>hours and data volume of the last 30 days</td></tr>
+<tr><td>Free storage</td><td>free space in the storage folder</td></tr>
+</tbody></table></div>
+<p>The page refreshes itself every 3 seconds.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="stations">
+<h2 class="sec">5. Setting up stations</h2>
+<p>A station is a saved stream with a name. The sunshine live Lounge stream is already added on first start.</p>
+<figure><img src="manual/en/sender.png" width="1280" height="860" alt="Stations page with list of stations, form for adding and result of a stream test" loading="lazy">
+<figcaption>Station list, form and the result of “Test”</figcaption></figure>
+<ol class="steps">
+  <li>Open the <span class="ui">Stations</span> menu.</li>
+  <li>Under <span class="ui">Add station</span> enter a name and the stream URL.</li>
+  <li>Use <span class="ui">Test stream</span> to check whether the stream can be recorded.</li>
+  <li><span class="ui">Save</span>.</li>
+</ol>
+<p>Use the direct stream address or a playlist address (<code>.m3u</code>, <code>.pls</code>). The recorder resolves playlists and redirects itself. You usually find the address on the station's website under “streams”, “web radio” or “player”, or in radio directories.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Test result</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Result</td><td><span class="pill ok">recordable</span> or <span class="pill error">not recordable</span> with the reason</td></tr>
+<tr><td>Format</td><td>audio format and the resulting file extension. MP3 gives <code>.mp3</code> with ID3 tags, AAC gives <code>.aac</code></td></tr>
+<tr><td>Bit rate</td><td>quality according to the station, e.g. 192 kbit/s</td></tr>
+<tr><td>Title info (ICY)</td><td>“yes” means the stream sends the songs currently playing. This becomes the track list in the file</td></tr>
+<tr><td>Final URL</td><td>the address after all redirects</td></tr>
+</tbody></table></div>
+<p>Edit stations with the pencil, delete them with ×. Jobs already planned keep their URL.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="job">
+<h2 class="sec">6. Planning a recording</h2>
+<p>Click <span class="ui">New job</span>.</p>
+<figure class="narrow"><img src="manual/en/auftrag.png" width="760" height="460" alt="New job dialog with fields for title, presenter, station, start, duration, pre-roll, post-roll and repeat" loading="lazy">
+<figcaption>The “New job” dialog. The date appears in the format of your browser language.</figcaption></figure>
+<div class="table-wrap"><table>
+<thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Title / show</td><td>required. Used in the file name and the ID3 title</td></tr>
+<tr><td>Presenter</td><td>optional. Written to the file as artist</td></tr>
+<tr><td>Station</td><td>one of the saved stations. <span class="ui">Other URL …</span> lets you enter an address for this job only</td></tr>
+<tr><td>Start, duration</td><td>start of the show and length in minutes (1 to 1440)</td></tr>
+<tr><td>Pre-roll, post-roll</td><td>how many minutes before the start the recording begins and after the end it stops (0–60 and 0–120)</td></tr>
+<tr><td>Repeat</td><td>once, daily, weekdays (Mon–Fri) or weekly on the same weekday</td></tr>
+</tbody></table></div>
+<div class="note"><b>Example</b>Show 21:00 to 23:00, pre-roll 1 min, post-roll 3 min → recording 20:59 to 23:03. Stations rarely keep their times to the second, the buffer prevents cut-off beginnings and endings.</div>
+<ul>
+  <li>Times are in the Home Assistant time zone, also across daylight saving changes.</li>
+  <li>Jobs may overlap. The recorder then records several streams at the same time.</li>
+  <li>Repeating jobs jump to the next date after each recording. One-time jobs disappear after recording and are then listed under <span class="ui">Done</span>.</li>
+</ul>
+</section>
+
+<!-- ================================================================== -->
+<section id="now">
+<h2 class="sec">7. Recording now</h2>
+<p><span class="ui">Record now</span> starts a recording without planning, e.g. when something good is on. This also works from an automation (<a href="#ha">section 14</a>).</p>
+<figure class="narrow"><img src="manual/en/jetzt.png" width="760" height="304" alt="Record now dialog with station, title and duration" loading="lazy">
+<figcaption>Choose a station, enter title and duration, start</figcaption></figure>
+<p>The recording starts within a second and appears at the top of the job list. To stop earlier, just stop it. The file recorded so far is kept.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="running">
+<h2 class="sec">8. Managing jobs</h2>
+<figure><img src="manual/en/kopf.png" width="1280" height="250" alt="Header area of the main page" loading="lazy">
+<figcaption>While recording, the status dot at the top right is orange</figcaption></figure>
+<div class="table-wrap"><table>
+<thead><tr><th>Display / button</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Planned · in 2 h</td><td>waiting for the start time</td></tr>
+<tr><td>Recording · 23:04 / 1:00:00</td><td>running. Below: progress bar, file size, data rate and, if sent, the current song (♪)</td></tr>
+<tr><td>“reconnected 2×”</td><td>the stream was briefly gone, recording continues in the same file</td></tr>
+<tr><td>Pencil / ×</td><td>edit job (only while it is not running) / delete</td></tr>
+<tr><td>Square</td><td>stop the running recording. The file so far is kept, the entry is shown as <span class="pill aborted">Stopped</span></td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ================================================================== -->
+<section id="done">
+<h2 class="sec">9. Finished recordings</h2>
+<p>The <span class="ui">Done</span> list shows every finished recording, newest first. Use the buttons at the top right to filter by status.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Status</th><th>When</th></tr></thead>
+<tbody>
+<tr><td><span class="pill ok">Successful</span></td><td>at least 97 % of the planned time is in the file</td></tr>
+<tr><td><span class="pill aborted">Stopped</span></td><td>stopped by hand or by an automation, or the app was stopped during recording (restart, update)</td></tr>
+<tr><td><span class="pill error">Error</span></td><td>no data (e.g. “HTTP 404”), too short (“incomplete: 41 of 64 min”) or “missed” because the app or Home Assistant was not running at the start time</td></tr>
+</tbody></table></div>
+<ul>
+  <li>The arrow downloads the file directly.</li>
+  <li>× only removes the entry from the list. <b>The file stays.</b> Entries older than 90 days disappear automatically.</li>
+</ul>
+</section>
+
+<!-- ================================================================== -->
+<section id="recordings">
+<h2 class="sec">10. Managing and cutting recordings</h2>
+<p><span class="ui">Recordings</span> shows all audio files from <code>record</code> (recordings) and <code>title</code> (single tracks), including subfolders and files you copied there yourself.</p>
+<figure><img src="manual/en/aufnahmen.png" width="1280" height="1020" alt="Recordings page with figures, filters, selection bar, list of files and player bar" loading="lazy">
+<figcaption>Two files selected, playback running at the bottom</figcaption></figure>
+<h3>List, search and pages</h3>
+<ul>
+  <li><b>Search</b> finds words in title, artist, album, file name, folder and in the track list, e.g. the show in which a certain song was played.</li>
+  <li><span class="ui">All</span> / <span class="ui">Recordings</span> / <span class="ui">Single track</span>, <b>station / album</b> and <span class="ui">Tags complete</span> / <span class="ui">Tags missing</span> narrow down the list.</li>
+  <li>Click a <b>column header</b> to sort, click again to reverse. At the bottom choose 10, 25, 50, 100 or all per page.</li>
+  <li><span class="ui">Rescan</span> reads the folders again right away, otherwise this happens when the page is opened.</li>
+  <li><b>Status:</b> result from “Done”, <b>single track</b> with its source, or <b>external</b> for files not made by the recorder.</li>
+</ul>
+<h3>Playback</h3>
+<p>The round button in each row plays the file in the browser. In the player bar small marks show the chapters, ⏮ and ⏭ jump to the previous or next song (without chapters 30 seconds). Playback continues when you switch menus.</p>
+<h3>Several files at once</h3>
+<p>Tick the files, the checkbox in the table header selects the whole page, <span class="ui">Select all … results</span> everything matching the filter. The selection bar offers <span class="ui">Rename by tags …</span>, <span class="ui">Cut tracks …</span>, <span class="ui">Edit tags</span> (one file), <span class="ui">Complete tags from job</span>, <span class="ui">Find covers</span>, <span class="ui">Download</span> and <span class="ui">Move to trash</span>.</p>
+<h3>Rename by tags</h3>
+<figure class="narrow"><img src="manual/en/umbenennen.png" width="940" height="478" alt="Rename dialog with pattern, placeholders and preview old and new" loading="lazy">
+<figcaption>The preview shows exactly what will happen before renaming</figcaption></figure>
+<ul>
+  <li>Placeholders: <code>{title}</code> <code>{artist}</code> <code>{album}</code> <code>{genre}</code> <code>{date}</code> <code>{time}</code> <code>{year}</code> <code>{month}</code> <code>{day}</code> <code>{weekday}</code> <code>{filename}</code>. The German names (<code>{titel}</code>, <code>{interpret}</code> …) work too.</li>
+  <li>Only the file name changes, the file stays in its folder. Nothing is ever overwritten, an equal name gets “(2)”.</li>
+  <li><span class="ui">Undo</span> reverts the last renaming, even after a restart.</li>
+</ul>
+<h3>Edit tags</h3>
+<figure><img src="manual/en/tags.png" width="940" height="718" alt="Edit tags dialog with fields, cover and track list" loading="lazy">
+<figcaption>Tags on the left, track list on the right. Clicking a song plays from that point.</figcaption></figure>
+<ul>
+  <li>Title, artist, album, date (<code>YYYY-MM-DD HH:MM</code>), genre, comment and cover (JPG/PNG up to 5 MB) can be changed. Editing works for MP3 only.</li>
+  <li><span class="ui">Use values from job</span> fills empty fields from the entry under “Done”.</li>
+  <li>The track list can be downloaded as .txt.</li>
+</ul>
+<h3>Cut into single tracks</h3>
+<p>A recording with a track list can be split into single songs. Each song becomes its own MP3 file in <code>title</code> with its own tags. The recording itself stays unchanged.</p>
+<figure class="narrow"><img src="manual/en/schneiden.png" width="940" height="738" alt="Cut recording dialog with list of detected tracks, checkboxes and notes" loading="lazy">
+<figcaption>The preview shows each detected track with time, length and whether it will be cut</figcaption></figure>
+<ol class="steps">
+  <li>Click the <b>scissors</b> in the recording's row, or select several recordings and click <span class="ui">Cut tracks …</span>.</li>
+  <li>Check the list. ▶ plays the recording from the cut point, the checkboxes select or deselect tracks.</li>
+  <li>Click <span class="ui">Cut … tracks</span>.</li>
+</ol>
+<ul>
+  <li><b>Deselected automatically</b> are the first and last track (usually cut off), station IDs and pieces shorter than the minimum length.</li>
+  <li><b>Lossless</b>, without re-encoding and without fade in/out.</li>
+  <li><b>Tags:</b> artist and title from the track list, album = station, track number, date and time, genre, cover.</li>
+</ul>
+<div class="note"><b>If the cuts are not exact</b>Stations often report track changes a few seconds too early or too late. If the song starts too late, set the <b>offset</b> to a positive value (e.g. 5 = all cuts 5 seconds later), if it starts too early, to a negative one. Enter the right value as default under <span class="ui">Settings</span>.</div>
+<figure><img src="manual/en/einstellungen-schnitt.png" width="1240" height="498" alt="Settings for cutting: folder, pattern, minimum length, offset, cover search" loading="lazy">
+<figcaption>Settings › Cutting single tracks</figcaption></figure>
+<h3>Covers</h3>
+<p>Radio streams contain no cover images, only artist and title. The recorder therefore searches online, first at <b>Deezer</b>, then at <b>Apple iTunes</b>.</p>
+<figure><img src="manual/en/einzeltitel.png" width="1280" height="560" alt="Recordings page with filter single tracks and cover thumbnails" loading="lazy">
+<figcaption>Filter “Single track”: the cover in front, a note symbol without cover</figcaption></figure>
+<ul>
+  <li>Automatically when cutting, as long as “Search song covers online when cutting” is on. Later with <span class="ui">Find covers</span> or in the tag dialog.</li>
+  <li><b>Better none than a wrong one:</b> a match is only used if artist and title agree well. Without a match the track gets the recording's cover, if it has one.</li>
+</ul>
+<div class="note"><b>Privacy</b>For the search, artist and title are sent to Deezer or Apple, nothing else. If you don't want that, turn the search off in the settings.</div>
+</section>
+
+<!-- ================================================================== -->
+<section id="trash">
+<h2 class="sec">11. Trash and empty folders</h2>
+<p><span class="ui">Move to trash</span> (in the row or the selection bar) moves files to <code>/media/stream-recorder/deleted</code>. The subfolders are kept, e.g. <code>deleted/record/sunshine live Lounge/2026-10/…</code>, so the recorder knows where the file belongs.</p>
+<figure><img src="manual/en/papierkorb.png" width="940" height="386" alt="Trash dialog with list of deleted files and buttons restore, delete permanently, empty trash" loading="lazy">
+<figcaption>The trash: select and restore or delete permanently</figcaption></figure>
+<ul>
+  <li>The <span class="ui">Trash</span> button at the top of the Recordings page shows count and size and opens the list.</li>
+  <li><span class="ui">Restore</span> puts the files back in their old place. If the name is taken there by now, “(2)” is added.</li>
+  <li><span class="ui">Delete permanently</span> and <span class="ui">Empty trash</span> really delete. This cannot be undone.</li>
+  <li><b>Empty automatically:</b> under <span class="ui">Settings › Options</span> set “Empty trash automatically after (days)”, e.g. 30. Files that have been in the trash longer are then deleted permanently. 0 = never (default).</li>
+  <li>Files you put into the <code>deleted</code> folder yourself also appear in the trash.</li>
+</ul>
+<h3>Empty folders</h3>
+<ul>
+  <li><b>Automatically:</b> if “Remove folders that became empty after deleting” is on under <span class="ui">Settings › Options</span> (default), the recorder removes the folders that became empty after “Move to trash”, also several levels up.</li>
+  <li><b>By hand:</b> <span class="ui">Remove empty folders</span> at the top of the Recordings page finds all empty folders, shows them and removes them after confirmation.</li>
+</ul>
+<div class="note"><b>What counts as empty</b>A folder without files and without subfolders that have content. System files like <code>.DS_Store</code>, <code>._…</code> or <code>Thumbs.db</code> don't count. The main folders <code>record</code>, <code>title</code> and <code>deleted</code> and hidden folders are never removed.</div>
+<figure><img src="manual/en/einstellungen.png" width="1280" height="1691" alt="Settings with options, recordings, cutting single tracks and system" loading="lazy">
+<figcaption>Settings: options at the top, then recordings, cutting single tracks and system</figcaption></figure>
+</section>
+
+<!-- ================================================================== -->
+<section id="folders">
+<h2 class="sec">12. Folders and file names</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Folder</th><th>Content</th></tr></thead>
+<tbody>
+<tr><td><code>/media/stream-recorder/record</code></td><td>recordings</td></tr>
+<tr><td><code>/media/stream-recorder/title</code></td><td>single tracks cut from recordings</td></tr>
+<tr><td><code>/media/stream-recorder/deleted</code></td><td>trash</td></tr>
+</tbody></table></div>
+<p>You change the storage folder in the app configuration (<a href="#installation">section 2</a>). Because the files are below <code>/media</code>, you also find them in the Home Assistant <b>media browser</b> and can play them there.</p>
+<p>Under <span class="ui">Settings › Recordings</span> you set subfolders and file names with placeholders:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Placeholder</th><th>becomes</th></tr></thead>
+<tbody>
+<tr><td><code>{station}</code></td><td>name of the station, e.g. “sunshine live Lounge”</td></tr>
+<tr><td><code>{title}</code> <code>{host}</code></td><td>title and presenter of the job</td></tr>
+<tr><td><code>{date}</code> <code>{time}</code></td><td>2026-10-24, 2100 (start time of the show)</td></tr>
+<tr><td><code>{year}</code> <code>{month}</code> <code>{day}</code> <code>{weekday}</code></td><td>2026, 10, 24, Saturday</td></tr>
+</tbody></table></div>
+<p>The German names (<code>{sender}</code>, <code>{titel}</code> …) work too. Default is <code>{station}/{year}-{month}</code> and <code>{date}_{time}_{title}</code>, for example:</p>
+<pre><code>/media/stream-recorder/record/sunshine live Lounge/2026-10/2026-10-24_2100_Deep House Session.mp3</code></pre>
+<p>Characters that are not allowed (<code>/ : ? * " &lt; &gt; |</code>) become a hyphen. If the file already exists, “(2)” is added. While recording the file is called <code>….mp3.part</code>.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="tags">
+<h2 class="sec">13. ID3 tags and track list</h2>
+<p>After each MP3 recording the recorder writes title (job), artist (presenter or station name), album (station), date, genre and, if the stream sends title info, the <b>track list</b> as a comment and one <b>chapter</b> per song into the file. Podcast apps use the chapters to jump directly to a song.</p>
+<p>Track list and chapters only exist if the stream sends title info (station test “Title info (ICY): yes”).</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="ha">
+<h2 class="sec">14. Home Assistant: sensors, events, commands</h2>
+<h3>Sensors</h3>
+<p>The app creates these entities in Home Assistant and keeps them up to date:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Entity</th><th>Content</th></tr></thead>
+<tbody>
+<tr><td><code>binary_sensor.stream_recorder_recording</code></td><td><code>on</code> while recording. Attributes: count, titles, stations, current song, data rate, end</td></tr>
+<tr><td><code>sensor.stream_recorder_next_recording</code></td><td>start time of the next recording (timestamp). Attributes: title, station, duration, repeat</td></tr>
+<tr><td><code>sensor.stream_recorder_last_recording</code></td><td>status of the last recording: <code>ok</code>, <code>aborted</code> or <code>error</code>. Attributes: title, station, message, file, start, end, duration</td></tr>
+<tr><td><code>sensor.stream_recorder_planned</code></td><td>number of planned jobs, attribute <code>next</code> with the next five</td></tr>
+<tr><td><code>sensor.stream_recorder_disk_free</code></td><td>free storage in GB</td></tr>
+</tbody></table></div>
+<p>The entities belong to no device and cannot be renamed in the UI. After a Home Assistant restart the app creates them again within 10 minutes.</p>
+<h3>Events</h3>
+<p>After each recording the app fires the event <code>stream_recorder_finished</code>, on errors also <code>stream_recorder_error</code>. Data: <code>title</code>, <code>sender</code>, <code>status</code>, <code>message</code>, <code>file</code>, <code>duration_s</code>, <code>started</code>, <code>ended</code>.</p>
+<p>Example: notification on an error:</p>
+<pre><code>alias: "Stream Recorder: report errors"
+triggers:
+  - trigger: event
+    event_type: stream_recorder_error
+actions:
+  - action: notify.notify
+    data:
+      title: "Recording failed"
+      message: "{{ trigger.event.data.title }}: {{ trigger.event.data.message }}"</code></pre>
+<h3>Commands: start and stop a recording</h3>
+<p>Automations and scripts start or stop a recording with the action <code>hassio.app_stdin</code>:</p>
+<pre><code># Record now (station named as under "Stations", duration in minutes)
+action: hassio.app_stdin
+data:
+  app: f91e2bd5_stream_recorder
+  input:
+    action: record
+    sender: sunshine live Lounge
+    duration: 60
+    title: Recording by automation
+
+# Stop running recording(s) – all of them without title
+action: hassio.app_stdin
+data:
+  app: f91e2bd5_stream_recorder
+  input:
+    action: stop
+    title: Recording by automation</code></pre>
+<ul>
+  <li>Instead of <code>sender</code> you can pass <code>url</code> with a stream address. Without either, the app uses the first station in the list.</li>
+  <li>The exact app name (<code>app:</code>) is shown in the address bar when you open the app under <i>Settings › Apps</i>. It starts with an ID of the repository, e.g. <code>f91e2bd5_stream_recorder</code>.</li>
+  <li>Rejected commands (e.g. unknown station) are written to the app log.</li>
+</ul>
+</section>
+
+<!-- ================================================================== -->
+<section id="log">
+<h2 class="sec">15. Log</h2>
+<figure><img src="manual/en/log.png" width="1280" height="520" alt="Log view with timestamps and messages" loading="lazy">
+<figcaption>The app log</figcaption></figure>
+<p>The <span class="ui">Log</span> menu shows the last 400 lines. Warnings are yellow, errors red. <span class="ui">Clear log</span> deletes the entries. The app deliberately writes only to its own log (file <code>/data/log/stream-recorder.log</code> in the app container), not to the Home Assistant log. Set the level of detail in the app configuration. At 5 MB a new file starts, three old ones are kept.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="trouble">
+<h2 class="sec">16. Troubleshooting</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Problem</th><th>Cause and solution</th></tr></thead>
+<tbody>
+<tr><td>The sidebar shows an error</td><td>The app is not running. Start it under <i>Settings › Apps › Stream Recorder</i> and turn on “Start on boot”</td></tr>
+<tr><td>Direct access: “not set up”</td><td>Username or password missing in the app configuration</td></tr>
+<tr><td>Direct access: page does not load</td><td>No port entered under <i>Network</i> in the configuration</td></tr>
+<tr><td>Stream test: HTTP 404 / 403</td><td>Address wrong or outdated. Look up the current stream URL on the station's website</td></tr>
+<tr><td>“The answer is a web page”</td><td>The URL leads to the player page. Use the direct stream or <code>.m3u</code> address</td></tr>
+<tr><td>“HLS streams are not supported”</td><td>The station only offers HLS (<code>.m3u8</code>). Look for an MP3 or AAC address</td></tr>
+<tr><td>Error “missed”</td><td>The app or Home Assistant was not running at the start time (restart, update, power cut)</td></tr>
+<tr><td>“incomplete” with many interruptions</td><td>Internet or station unstable. The file contains everything that arrived</td></tr>
+<tr><td>“Storage folder is not reachable”</td><td>Network share not mounted or wrong storage folder in the configuration</td></tr>
+<tr><td>No track list in the file</td><td>The stream sends no title info (station test: “ICY: no”)</td></tr>
+<tr><td>Scissors greyed out</td><td>No track list, not an MP3 or already a single track. The tooltip says why</td></tr>
+<tr><td>Sensors missing in Home Assistant</td><td>The system info under <span class="ui">Settings</span> shows whether the connection works. After a HA restart wait up to 10 minutes</td></tr>
+<tr><td>Storage running full</td><td>Move old files to the trash and empty it, or let it empty automatically</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ================================================================== -->
+<section id="reference">
+<h2 class="sec">17. Quick reference</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>What</th><th>Where</th></tr></thead>
+<tbody>
+<tr><td>Interface</td><td>Home Assistant sidebar, optionally <code>http://&lt;IP&gt;:&lt;port&gt;/</code></td></tr>
+<tr><td>Configuration</td><td><i>Settings › Apps › Stream Recorder › Configuration</i></td></tr>
+<tr><td>Recordings / single tracks / trash</td><td><code>/media/stream-recorder/record</code>, <code>…/title</code>, <code>…/deleted</code></td></tr>
+<tr><td>Database, log</td><td>in the app's data folder (<code>/data</code>), included in the Home Assistant backup</td></tr>
+<tr><td>Source code, report issues</td><td><a href="https://github.com/BreitiDE/ha-stream-recorder">github.com/BreitiDE/ha-stream-recorder</a></td></tr>
+</tbody></table></div>
+</section>
+
+<footer>Stream Recorder 2.0.0 · User manual · <a href="https://paypal.me/breitide">Donate via PayPal</a></footer>
+</main>
+</div>
+</body>
+</html>

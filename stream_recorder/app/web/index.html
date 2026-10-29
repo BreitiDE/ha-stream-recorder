@@ -1,0 +1,1535 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stream-Recorder</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+/* Farbsystem: FARBDESIGN.md, Akzent #ce6c00 (hell und dunkel gleich) */
+:root {
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb; --field:#ffffff; --ink:#0b0b0b; --ink-2:#52514e; --muted:#6b6a65;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --field-border:rgba(11,11,11,.20); --hover:rgba(11,11,11,.04);
+  --accent:#ce6c00; --accent-text:#a45502; --on-accent:#0b0b0b; --accent-soft:rgba(206,108,0,.12); --track:#f0efec;
+  --good:#0ca30c; --good-bg:rgba(12,163,12,.12); --good-text:#086b08;
+  --warning:#fab219; --warn-bg:rgba(250,178,25,.18); --warn-text:#7a5200;
+  --critical:#d03b3b; --crit-bg:rgba(208,59,59,.12); --crit-text:#a62a2a;
+  --shadow:0 12px 40px rgba(0,0,0,.18);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --field:#232322; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#9a998f;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --field-border:rgba(255,255,255,.20); --hover:rgba(255,255,255,.05);
+    --accent-text:#e09156; --accent-soft:rgba(206,108,0,.18); --track:#262624;
+    --good-bg:rgba(12,163,12,.18); --good-text:#6fd36f; --warn-bg:rgba(250,178,25,.16); --warn-text:#f5c860;
+    --crit-bg:rgba(208,59,59,.18); --crit-text:#f08a8a; --shadow:0 12px 40px rgba(0,0,0,.6);
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--accent-text); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
+header { background: var(--surface); border-bottom: 1px solid var(--border); }
+header .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; padding-top: 10px; padding-bottom: 10px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 18px; }
+nav { display: flex; flex-wrap: wrap; gap: 4px; }
+nav button { font: inherit; border: 0; background: transparent; color: var(--ink-2); padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+nav button[aria-current="page"] { background: var(--accent-soft); color: var(--accent-text); font-weight: 600; }
+nav button:hover:not([aria-current]) { background: var(--hover); }
+nav .navlink { color: var(--ink-2); padding: 8px 12px; border-radius: 8px; text-decoration: none; }
+nav .navlink:hover { background: var(--hover); }
+.who { margin-left: auto; display: flex; align-items: center; gap: 14px; color: var(--ink-2); font-size: 13px; flex-wrap: wrap; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.dot.ok { background: var(--good); } .dot.bad { background: var(--critical); } .dot.rec { background: var(--accent); }
+main.wrap { padding-top: 20px; padding-bottom: 48px; display: flex; flex-direction: column; gap: 16px; }
+.btn { font: inherit; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+  cursor: pointer; display: inline-flex; align-items: center; gap: 8px; min-height: 38px; text-decoration: none; }
+.btn:hover { background: var(--hover); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-accent); font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.small { padding: 5px 10px; min-height: 30px; font-size: 13px; }
+.btn.danger { color: var(--crit-text); }
+.btn:disabled { opacity: .5; cursor: default; }
+.icon-btn { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-2);
+  cursor: pointer; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+.icon-btn:hover { background: var(--hover); color: var(--ink); }
+.icon-btn.danger { color: var(--crit-text); }
+.icon-btn:disabled { opacity: .3; cursor: default; }
+.icon-btn:disabled:hover { background: var(--surface); }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.target { margin-left: auto; display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface); flex-wrap: wrap; min-width: 0; max-width: 100%; }
+.target code { font-size: 13px; overflow-wrap: anywhere; }
+.target .lbl { color: var(--ink-2); font-size: 13px; }
+.linkbtn { font: inherit; font-size: 13px; background: none; border: 0; padding: 0; color: var(--accent-text); text-decoration: underline; cursor: pointer; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; min-width: 0; }
+.kpi { padding: 14px 16px; }
+.kpi .l { color: var(--ink-2); font-size: 12px; }
+.kpi .v { font-size: 26px; font-weight: 600; letter-spacing: -.02em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.kpi .s { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.kpi.rec .v { color: var(--accent-text); }
+.card-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin-bottom: 10px; }
+h2 { font-size: 15px; font-weight: 600; margin: 0; }
+.hint { color: var(--muted); font-size: 12px; }
+.seg { margin-left: auto; display: inline-flex; border: 1px solid var(--border); border-radius: 8px; padding: 2px; flex-wrap: wrap; }
+.seg button { font: inherit; font-size: 13px; padding: 5px 10px; border-radius: 6px; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 600; }
+.table-wrap { overflow-x: auto; margin: 0 -16px; padding: 0 16px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+#jobsTbl, #histTbl { min-width: 900px; }
+#sendersTbl { min-width: 560px; }
+th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12px; padding: 6px 8px; border-bottom: 1px solid var(--axis); white-space: nowrap; }
+td { padding: 9px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+td.nw { white-space: nowrap; }
+tbody tr:hover { background: var(--hover); }
+.t { font-weight: 600; }
+.sub { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+.url { color: var(--ink-2); max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.badge { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border); color: var(--ink-2); white-space: nowrap; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.ok { background: var(--good-bg); color: var(--good-text); }
+.pill.aborted { background: var(--warn-bg); color: var(--warn-text); }
+.pill.error { background: var(--crit-bg); color: var(--crit-text); }
+.recst { display: flex; flex-direction: column; gap: 4px; min-width: 150px; }
+.recst b { color: var(--accent-text); display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.bar { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; }
+.bar > div { height: 100%; background: var(--accent); border-radius: 3px; transition: width .5s; }
+.empty { color: var(--muted); padding: 22px 0; text-align: center; }
+.row-actions { display: inline-flex; gap: 4px; }
+.msg-err { color: var(--crit-text); }
+footer { color: var(--muted); font-size: 12px; display: flex; flex-wrap: wrap; gap: 16px; }
+.view[hidden] { display: none !important; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+label.f { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--ink-2); min-width: 0; }
+input[type=text], input[type=url], input[type=number], input[type=datetime-local], select, textarea {
+  font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--field-border); background: var(--field); color: var(--ink); min-width: 0; width: 100%; }
+input[type=checkbox] { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.inline { display: flex; gap: 8px; align-items: center; }
+.inline > input { flex: 1; }
+.inline > input[type=checkbox] { flex: none; }
+pre.log { margin: 0; max-height: 70vh; overflow: auto; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+pre.log .w { color: var(--warn-text); } pre.log .e { color: var(--crit-text); }
+dialog { border: 1px solid var(--border); border-radius: 12px; padding: 0; background: var(--surface); color: var(--ink); box-shadow: var(--shadow);
+  width: min(760px, calc(100vw - 24px)); max-height: calc(100vh - 32px); }
+dialog::backdrop { background: rgba(11,11,11,.4); }
+dialog form, .dlg { display: flex; flex-direction: column; max-height: calc(100vh - 34px); }
+.dlg-head { display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--grid); }
+.dlg-head h2 { font-size: 16px; }
+.dlg-head .icon-btn { margin-left: auto; }
+.dlg-body { padding: 16px 20px; overflow: auto; display: flex; flex-direction: column; gap: 14px; }
+.dlg-foot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-end; padding: 14px 20px; border-top: 1px solid var(--grid); }
+.dlg-foot .grow { margin-right: auto; color: var(--ink-2); font-size: 13px; }
+.form-err { color: var(--crit-text); font-size: 13px; margin: 0; }
+.dir-list { border: 1px solid var(--border); border-radius: 8px; max-height: 320px; overflow: auto; }
+.dir-list button { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; font: inherit; background: none; border: 0;
+  border-bottom: 1px solid var(--grid); padding: 8px 10px; color: var(--ink); cursor: pointer; }
+.dir-list button:hover { background: var(--hover); }
+.places { display: flex; flex-wrap: wrap; gap: 6px; }
+.test-out { font-size: 13px; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.test-out dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 14px; margin: 6px 0 0; }
+.test-out dt { color: var(--muted); } .test-out dd { margin: 0; overflow-wrap: anywhere; }
+.warnbar { background: var(--warn-bg); color: var(--warn-text); border-radius: 12px; padding: 10px 14px; font-size: 13px; font-weight: 500; }
+.toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--page); padding: 10px 16px;
+  border-radius: 8px; font-size: 13px; box-shadow: var(--shadow); z-index: 50; max-width: calc(100vw - 32px); }
+.toast.err { background: var(--critical); color: #fff; }
+body.has-player .toast { bottom: 96px; }
+@media (max-width: 760px) { body.has-player .toast { bottom: 150px; } }
+/* ---------- Aufnahmen ---------- */
+.lib-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; }
+.lib-head h1 { font-size: 20px; margin: 0; font-weight: 650; }
+.lib-facts { display: flex; flex-wrap: wrap; gap: 6px 18px; color: var(--ink-2); font-size: 13px; }
+.lib-facts b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.lib-head .right { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lib-filter { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.lib-filter .search { position: relative; flex: 1 1 280px; max-width: 460px; }
+.lib-filter .search svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.lib-filter .search input { padding-left: 34px; }
+.lib-filter select { width: auto; }
+input[type=search] { font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--field-border); background: var(--field); color: var(--ink); width: 100%; }
+.selbar, .undobar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 14px; border-radius: 12px; }
+.selbar { background: var(--accent-soft); }
+.undobar { background: var(--surface); border: 1px solid var(--border); font-size: 13px; color: var(--ink-2); }
+.selbar .end, .undobar .end { margin-left: auto; }
+#libTbl { min-width: 1080px; }
+#libTbl th button.sort { font: inherit; font-size: 12px; color: var(--muted); background: none; border: 0; padding: 0; cursor: pointer; white-space: nowrap; }
+#libTbl th button.sort[aria-sort] { color: var(--ink); font-weight: 600; }
+#libTbl tr.sel { background: var(--accent-soft); }
+#libTbl tr.playing td { box-shadow: inset 0 0 0 9999px rgba(206,108,0,.06); }
+.playbtn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--ink);
+  display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.playbtn.on { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+.playbtn svg { width: 13px; height: 13px; fill: currentColor; stroke: none; }
+.tcell { display: flex; gap: 10px; align-items: flex-start; }
+.thumb { width: 44px; height: 44px; flex: none; border-radius: 6px; overflow: hidden; background: var(--track); color: var(--muted);
+  display: inline-flex; align-items: center; justify-content: center; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb.pl { width: 44px; height: 44px; }
+.chip { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+.chip.full { background: var(--good-bg); color: var(--good-text); }
+.chip.partial, .chip.unknown { background: var(--warn-bg); color: var(--warn-text); }
+.chip.none { background: var(--crit-bg); color: var(--crit-text); }
+.pill.ext { background: var(--track); color: var(--ink-2); }
+.dimmed { color: var(--muted); }
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 12px; color: var(--ink-2); font-size: 13px; }
+.pager .end { margin-left: auto; display: inline-flex; gap: 4px; align-items: center; }
+.pager select { width: auto; padding: 5px 8px; font-size: 13px; }
+.pager .icon-btn:disabled { opacity: .4; cursor: default; }
+.player { position: fixed; left: 50%; transform: translateX(-50%); bottom: 14px; width: min(1240px, calc(100vw - 24px)); z-index: 40;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 10px 14px; border-radius: 12px;
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow); }
+.player .pp { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--accent); color: var(--on-accent); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.player .pp svg { width: 15px; height: 15px; fill: currentColor; stroke: none; }
+.player .meta { min-width: 180px; max-width: 360px; }
+.player .meta .t { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player .meta .c { color: var(--ink-2); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.player .seek { flex: 1 1 260px; display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.player .track { flex: 1; height: 8px; border-radius: 4px; background: var(--track); position: relative; cursor: pointer; }
+.player .track > div { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 4px; }
+.player .track i { position: absolute; top: -2px; width: 2px; height: 12px; background: var(--axis); }
+body.has-player main.wrap { padding-bottom: 110px; }
+dialog.wide { width: min(940px, calc(100vw - 24px)); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.chips button { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); cursor: pointer; }
+.chips button:hover { background: var(--hover); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.prev-wrap { border: 1px solid var(--border); border-radius: 8px; max-height: 320px; overflow: auto; }
+.prev-wrap table { font-size: 13px; }
+.prev-wrap th { position: sticky; top: 0; background: var(--surface); }
+.prev-wrap td { overflow-wrap: anywhere; }
+#cutTbl td { vertical-align: middle; }
+#cutTbl tr.grp td { background: var(--hover); font-weight: 600; position: sticky; top: 30px; }
+#cutTbl tr.off td { color: var(--muted); }
+#cutTbl tr.off .t { font-weight: 500; }
+.pill.track { background: var(--accent-soft); color: var(--accent-text); }
+.note { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 4px; font-weight: 600; }
+.note.ok { background: var(--good-bg); color: var(--good-text); }
+.note.warn { background: var(--warn-bg); color: var(--warn-text); }
+.note.same { background: var(--track); color: var(--ink-2); }
+.tag-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; }
+.tag-grid .col { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.cover { width: 84px; height: 84px; border-radius: 8px; border: 1px dashed var(--field-border); display: flex; align-items: center; justify-content: center;
+  color: var(--muted); font-size: 11px; text-align: center; overflow: hidden; flex: none; }
+.cover img { width: 100%; height: 100%; object-fit: cover; }
+.tracklist { border: 1px solid var(--border); border-radius: 8px; height: 330px; overflow: auto; font-size: 13px; }
+.tracklist button { display: grid; grid-template-columns: 70px minmax(0, 1fr); gap: 8px; width: 100%; text-align: left; font: inherit; background: none;
+  border: 0; border-bottom: 1px solid var(--grid); padding: 6px 10px; color: var(--ink); cursor: pointer; }
+.tracklist button:hover { background: var(--hover); }
+.tracklist .tm { color: var(--muted); font-variant-numeric: tabular-nums; }
+.tracklist .none { height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; padding: 20px; color: var(--muted); }
+.banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn-text); font-size: 13px; }
+.banner .btn { margin-left: auto; }
+.file-list { max-height: 220px; overflow: auto; border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; font-size: 13px; margin: 0; list-style: none; }
+.file-list li { padding: 3px 0; border-bottom: 1px solid var(--grid); overflow-wrap: anywhere; }
+@media (max-width: 760px) { .tag-grid { grid-template-columns: minmax(0, 1fr); } .lib-head .right { margin-left: 0; } }
+@media (max-width: 700px) { .target { margin-left: 0; } .who { margin-left: 0; } }
+/* ---------- 2.0: Spenden, Papierkorb, feste Ordner ---------- */
+.donate { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--border); border-radius: 8px; padding: 5px 10px; min-height: 30px;
+  color: var(--ink); text-decoration: none; font-weight: 600; font-size: 13px; background: var(--surface); }
+.donate svg { color: var(--accent); }
+.donate:hover { background: var(--hover); }
+.btn .count { font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); }
+code.ro { display: block; font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px dashed var(--field-border); color: var(--ink);
+  background: var(--hover); overflow-wrap: anywhere; }
+.btn.danger-fill { background: var(--critical); border-color: var(--critical); color: #fff; font-weight: 600; }
+#binTbl tr.sel { background: var(--accent-soft); }
+#binTbl td { vertical-align: middle; }
+#confirmDlg { width: min(460px, calc(100vw - 24px)); }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#ce6c00"/><circle cx="16" cy="16" r="6" fill="none" stroke="#0b0b0b" stroke-width="2.5"/><circle cx="16" cy="16" r="2.5" fill="#0b0b0b"/></svg><span>Stream-Recorder</span></div>
+    <nav aria-label="Hauptmenü">
+      <button data-view="jobs" aria-current="page">Aufträge</button>
+      <button data-view="library">Aufnahmen</button>
+      <button data-view="senders" data-en="Stations">Sender</button>
+      <button data-view="settings">Einstellungen</button>
+      <button data-view="log">Log</button>
+      <a class="navlink" href="manual">Anleitung</a>
+    </nav>
+    <div class="who">
+      <span><span class="dot" id="schedDot"></span> <span id="schedText">verbinde …</span></span>
+      <span id="userBox">angemeldet als <b id="userName">–</b></span>
+      <a class="donate" id="donateBtn" href="https://paypal.me/breitide" target="_blank" rel="noopener" title="Gefällt Dir die App? Über eine Spende freue ich mich."><svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span>Spenden</span></a>
+      <button class="btn small" id="logoutBtn" hidden>Abmelden</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="warnbar" id="warnBar" role="alert" hidden></div>
+  <!-- ======================= Aufträge ======================= -->
+  <section class="view" id="view-jobs" style="display:flex;flex-direction:column;gap:16px">
+    <div class="actions">
+      <button class="btn primary" id="newJobBtn"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Neuer Auftrag</span></button>
+      <button class="btn" id="nowBtn"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3" fill="currentColor"/></svg><span>Jetzt aufnehmen</span></button>
+      <div class="target">
+        <svg class="i" viewBox="0 0 24 24" style="color:var(--ink-2)"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <span class="lbl">Aufnahmen in</span><code id="targetDir">–</code>
+      </div>
+    </div>
+
+    <section class="stats" id="stats" aria-label="Statistik"></section>
+
+    <section class="card" aria-labelledby="h-jobs">
+      <div class="card-head"><h2 id="h-jobs">Aufträge</h2><span class="hint">geplant und laufend · nach Startzeit</span></div>
+      <div class="table-wrap"><table id="jobsTbl"></table></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-done">
+      <div class="card-head">
+        <h2 id="h-done">Erledigt</h2><span class="hint">neueste zuerst</span>
+        <div class="seg" id="histSeg" role="group" aria-label="Filter">
+          <button data-s="" aria-pressed="true">Alle</button><button data-s="ok" aria-pressed="false">Erfolgreich</button>
+          <button data-s="aborted" aria-pressed="false">Abgebrochen</button><button data-s="error" aria-pressed="false">Fehler</button>
+        </div>
+      </div>
+      <div class="table-wrap"><table id="histTbl"></table></div>
+    </section>
+  </section>
+
+  <!-- ======================= Aufnahmen ======================= -->
+  <section class="view" id="view-library" hidden style="flex-direction:column;gap:14px">
+    <div class="lib-head">
+      <h1>Aufnahmen</h1>
+      <div class="lib-facts" id="libFacts"></div>
+      <div class="right"><span class="hint" id="libRoot"></span>
+        <button class="btn" id="libBin"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg><span>Papierkorb</span><span class="count" id="libBinCount"></span></button>
+        <button class="btn" id="libEmpty" title="Leere Ordner suchen und entfernen"><svg class="i" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 13h6"/></svg><span>Leere Ordner entfernen</span></button>
+        <button class="btn" id="libRescan"><svg class="i" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg><span>Neu einlesen</span></button></div>
+    </div>
+    <div class="lib-filter">
+      <label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+        <input type="search" id="libQ" placeholder="Suchen in Titel, Interpret, Dateiname, Titelliste …" aria-label="Suchen"></label>
+      <div class="seg" id="libKind" role="group" aria-label="Art" style="margin-left:0">
+        <button data-k="all" aria-pressed="true">Alle</button><button data-k="recording" aria-pressed="false">Aufnahmen</button><button data-k="track" aria-pressed="false">Einzeltitel</button>
+      </div>
+      <select id="libAlbum" aria-label="Sender / Album"></select>
+      <div class="seg" id="libTags" role="group" aria-label="Tags" style="margin-left:0">
+        <button data-t="all" aria-pressed="true">Alle</button><button data-t="full" aria-pressed="false">Tags vollständig</button><button data-t="missing" aria-pressed="false">Tags fehlen</button>
+      </div>
+    </div>
+    <div class="undobar" id="libUndo" hidden></div>
+    <div class="selbar" id="libSel" hidden>
+      <b id="libSelCount"></b>
+      <button class="btn small primary" data-act="rename"><svg class="i" viewBox="0 0 24 24"><path d="M4 7h11M4 12h8M4 17h11M17 9l3 3-3 3"/></svg><span>Nach Tags umbenennen …</span></button>
+      <button class="btn small" data-act="cut"><svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.1 8.1L20 20M8.1 15.9L20 4"/></svg><span>Titel schneiden …</span></button>
+      <button class="btn small" data-act="tags">Tags bearbeiten</button>
+      <button class="btn small" data-act="fill">Tags aus Auftrag ergänzen</button>
+      <button class="btn small" data-act="covers" title="Für ausgewählte Einzeltitel ohne Cover online ein Cover suchen">Cover suchen</button>
+      <button class="btn small" data-act="download">Herunterladen</button>
+      <button class="btn small danger" data-act="trash">In den Papierkorb</button>
+      <span class="end"><button class="linkbtn" data-act="all" id="libSelAll"></button> <button class="linkbtn" data-act="none">Auswahl aufheben</button></span>
+    </div>
+    <section class="card" aria-label="Liste der Aufnahmen" style="padding-top:6px">
+      <div class="table-wrap"><table id="libTbl"></table></div>
+      <div class="pager" id="libPager"></div>
+    </section>
+  </section>
+
+  <!-- ======================= Sender ======================= -->
+  <section class="view" id="view-senders" hidden style="flex-direction:column;gap:16px">
+    <section class="card">
+      <div class="card-head"><h2 data-en="Stations">Sender</h2><span class="hint">gespeicherte Stream-URLs für Aufträge</span></div>
+      <div class="table-wrap"><table id="sendersTbl"></table></div>
+    </section>
+    <section class="card">
+      <h2 id="senderFormTitle" style="margin-bottom:12px">Sender hinzufügen</h2>
+      <form id="senderForm" class="form-grid" style="grid-template-columns:minmax(160px,1fr) minmax(260px,3fr)">
+        <input type="hidden" name="id">
+        <label class="f">Name<input type="text" name="name" required placeholder="z. B. sunshine live"></label>
+        <label class="f">Stream-URL (MP3, auch .m3u/.pls)<input type="url" name="url" required placeholder="https://…"></label>
+        <div class="actions" style="grid-column:1/-1">
+          <button class="btn primary" type="submit">Speichern</button>
+          <button class="btn" type="button" id="senderTestBtn">Stream testen</button>
+          <button class="btn" type="button" id="senderResetBtn">Leeren</button>
+        </div>
+      </form>
+      <div id="testOut" style="margin-top:14px"></div>
+    </section>
+  </section>
+
+  <!-- ======================= Einstellungen ======================= -->
+  <section class="view" id="view-settings" hidden style="flex-direction:column;gap:16px">
+    <section class="card">
+      <h2 style="margin-bottom:12px">Optionen</h2>
+      <form id="optForm" style="display:flex;flex-direction:column;gap:14px">
+        <div class="form-grid">
+          <label class="f">Sprache / Language<select name="language"><option value="auto">Automatisch (wie Home Assistant)</option><option value="de">Deutsch</option><option value="en">English</option></select></label>
+          <label class="f">Papierkorb automatisch leeren nach (Tagen)<input type="number" name="trash_days" min="0" max="3650" step="1"></label>
+        </div>
+        <p class="hint" style="margin:-6px 0 0">0 Tage = Papierkorb nie automatisch leeren. Dateien im Papierkorb lassen sich auf der Seite Aufnahmen wiederherstellen.</p>
+        <label class="inline" style="font-size:14px;gap:8px"><input type="checkbox" name="prune_empty_dirs"><span>Leer gewordene Ordner nach dem Löschen automatisch entfernen</span></label>
+        <p class="hint" style="margin:-8px 0 0 24px">Gilt für „In den Papierkorb“ auf der Seite Aufnahmen. Entfernt nur Ordner ohne Inhalt (Systemdateien wie .DS_Store zählen nicht). Die Hauptordner record, title und deleted bleiben immer.</p>
+        <div class="actions"><button class="btn primary" type="submit">Speichern</button></div>
+      </form>
+    </section>
+    <section class="card">
+      <h2 style="margin-bottom:12px">Aufnahmen</h2>
+      <form id="settingsForm" style="display:flex;flex-direction:column;gap:14px">
+        <div class="f">Ordner für Aufnahmen<code class="ro" id="recDir"></code></div>
+        <div class="form-grid">
+          <label class="f">Unterordner<input type="text" name="folder_pattern" class="mono" spellcheck="false"></label>
+          <label class="f">Dateiname (ohne Endung)<input type="text" name="file_pattern" class="mono" spellcheck="false" required></label>
+          <label class="f">Vorlauf Standard (min)<input type="number" name="pre_roll_min" min="0" max="60" step="1"></label>
+          <label class="f">Nachlauf Standard (min)<input type="number" name="post_roll_min" min="0" max="120" step="1"></label>
+        </div>
+        <p class="hint" style="margin:0"><span class="tr">Platzhalter:</span> <span class="mono" id="recPh"></span> · <span class="tr">Beispiel:</span> <code id="patternPreview"></code></p>
+        <div class="actions"><button class="btn primary" type="submit">Speichern</button></div>
+      </form>
+    </section>
+    <section class="card">
+      <h2 style="margin-bottom:4px">Einzeltitel schneiden</h2>
+      <p class="hint" style="margin:0 0 12px">Gilt für den Scheren-Knopf auf der Seite Aufnahmen. Geschnitten wird verlustfrei an den Titelwechseln der Titelliste.</p>
+      <form id="cutForm" style="display:flex;flex-direction:column;gap:14px">
+        <div class="f">Ordner für Einzeltitel<code class="ro" id="titleDir"></code></div>
+        <label class="f">Unterordner und Dateiname (ohne Endung)<input type="text" name="cut_pattern" class="mono" spellcheck="false"></label>
+        <div class="form-grid">
+          <label class="f">Mindestlänge eines Titels (Sekunden)<input type="number" name="cut_min_len" min="0" max="3600" step="1"></label>
+          <label class="f">Verschiebung der Schnittpunkte (Sekunden, ± )<input type="number" name="cut_offset" min="-120" max="120" step="1"></label>
+        </div>
+        <label class="inline" style="font-size:14px;gap:8px"><input type="checkbox" name="cover_lookup"><span>Song-Cover beim Schneiden online suchen</span></label>
+        <p class="hint" style="margin:-8px 0 0 24px">Sucht anhand von Interpret und Titel bei Deezer, dann bei Apple iTunes. Dafür werden Interpret und Titel an diese Dienste geschickt. Ohne Treffer bekommt der Titel das Cover der Aufnahme, falls sie eins hat.</p>
+        <p class="hint" style="margin:0"><span class="tr">Platzhalter:</span> <span class="mono" id="cutPh"></span> · <span class="tr">Beispiel:</span> <code id="cutPreview"></code></p>
+        <p class="hint" style="margin:0">Die Verschiebung gleicht aus, dass Sender Titelwechsel oft etwas zu früh oder zu spät melden: positive Werte schneiden später.</p>
+        <div class="actions"><button class="btn primary" type="submit">Speichern</button></div>
+      </form>
+    </section>
+    <section class="card">
+      <h2 style="margin-bottom:8px">System</h2>
+      <dl id="sysInfo" class="test-out" style="border:0;padding:0"></dl>
+      <p class="hint" style="margin:10px 0 0">Speicherordner, Zugangsdaten für den direkten Zugriff und Log-Level stehen in Home Assistant unter Einstellungen › Apps › Stream Recorder › Konfiguration.</p>
+    </section>
+  </section>
+
+  <!-- ======================= Log ======================= -->
+  <section class="view" id="view-log" hidden>
+    <section class="card">
+      <div class="card-head"><h2>Log</h2><span class="hint" id="logFile"></span>
+        <div class="seg" style="border:0;gap:8px"><button class="btn small" id="logRefresh">Aktualisieren</button><button class="btn small danger" id="logClear">Log leeren</button></div></div>
+      <pre class="log" id="logPre"></pre>
+    </section>
+  </section>
+
+  <footer><span id="ver"></span><span><span class="tr">Aktualisiert sich alle 3 s</span> · <span id="updated"></span></span></footer>
+</main>
+
+<!-- ======================= Dialoge ======================= -->
+<dialog id="jobDlg" aria-labelledby="jobDlgTitle">
+  <form id="jobForm" method="dialog">
+    <div class="dlg-head"><h2 id="jobDlgTitle">Neuer Auftrag</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="dlg-body">
+      <input type="hidden" name="id">
+      <div class="form-grid">
+        <label class="f">Titel / Sendung<input type="text" name="title" required></label>
+        <label class="f">Moderation (optional)<input type="text" name="host"></label>
+      </div>
+      <label class="f">Sender<select name="sender_id"></select></label>
+      <label class="f" id="urlField">Stream-URL<input type="url" name="url" placeholder="https://…"></label>
+      <div class="form-grid">
+        <label class="f">Start<input type="datetime-local" name="start" required></label>
+        <label class="f">Dauer (min)<input type="number" name="duration_min" min="1" max="1440" step="1" required value="60"></label>
+        <label class="f">Vorlauf (min)<input type="number" name="pre_min" min="0" max="60" step="1"></label>
+        <label class="f">Nachlauf (min)<input type="number" name="post_min" min="0" max="120" step="1"></label>
+        <label class="f">Wiederholung<select name="repeat"><option value="once">einmalig</option><option value="daily">täglich</option><option value="weekdays">werktags (Mo–Fr)</option><option value="weekly">wöchentlich</option></select></label>
+      </div>
+      <p class="form-err" id="jobErr" hidden></p>
+    </div>
+    <div class="dlg-foot"><span class="grow" id="jobSummary"></span>
+      <button class="btn" type="button" data-close>Abbrechen</button><button class="btn primary" type="submit">Speichern</button></div>
+  </form>
+</dialog>
+
+<dialog id="nowDlg" aria-labelledby="nowDlgTitle">
+  <form id="nowForm" method="dialog">
+    <div class="dlg-head"><h2 id="nowDlgTitle">Jetzt aufnehmen</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="dlg-body">
+      <label class="f">Sender<select name="sender_id"></select></label>
+      <label class="f" data-url>Stream-URL<input type="url" name="url" placeholder="https://…"></label>
+      <div class="form-grid">
+        <label class="f">Titel<input type="text" name="title" required value="Sofortaufnahme"></label>
+        <label class="f">Dauer (min)<input type="number" name="duration_min" min="1" max="1440" value="60" required></label>
+      </div>
+      <p class="form-err" id="nowErr" hidden></p>
+    </div>
+    <div class="dlg-foot"><button class="btn" type="button" data-close>Abbrechen</button><button class="btn primary" type="submit">Aufnahme starten</button></div>
+  </form>
+</dialog>
+
+<dialog id="renDlg" class="wide" aria-labelledby="renTitle">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="renTitle">Nach Tags umbenennen</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="dlg-body">
+      <label class="f">Neuer Dateiname (ohne Endung)<input type="text" id="renPattern" class="mono" spellcheck="false" autocomplete="off"></label>
+      <div class="chips" id="renChips"></div>
+      <label class="inline" style="font-size:13px;color:var(--ink-2)"><input type="checkbox" id="renSkip"><span>Leere Tags samt Trennzeichen weglassen</span></label>
+      <div><div style="font-size:13px;font-weight:600;margin-bottom:6px">Vorschau</div>
+        <div class="prev-wrap"><table id="renPrev"></table></div></div>
+      <p class="hint" style="margin:0">Nur der Dateiname ändert sich, der Ordner bleibt. Einträge unter „Erledigt“ zeigen danach auf den neuen Namen. Rückgängig mit „Zurücknehmen“ auf der Seite Aufnahmen.</p>
+      <p class="form-err" id="renErr" hidden></p>
+    </div>
+    <div class="dlg-foot"><span class="grow" id="renCount"></span>
+      <button class="btn" type="button" data-close>Abbrechen</button><button class="btn primary" id="renGo" disabled>Umbenennen</button></div>
+  </div>
+</dialog>
+
+<dialog id="tagDlg" class="wide" aria-labelledby="tagTitle">
+  <form id="tagForm" method="dialog">
+    <div class="dlg-head"><div style="min-width:0"><h2 id="tagTitle">Tags bearbeiten</h2><div class="hint" id="tagFile" style="overflow-wrap:anywhere"></div></div>
+      <button class="icon-btn" type="button" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="dlg-body">
+      <div class="banner" id="tagBanner" hidden></div>
+      <div class="tag-grid">
+        <div class="col">
+          <label class="f">Titel<input type="text" name="title"></label>
+          <label class="f">Interpret / Moderation<input type="text" name="artist"></label>
+          <label class="f">Album / Sender<input type="text" name="album"></label>
+          <div class="form-grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+            <label class="f">Datum<input type="text" name="date" placeholder="JJJJ-MM-TT HH:MM"></label>
+            <label class="f">Genre<input type="text" name="genre"></label>
+          </div>
+          <label class="f">Kommentar<textarea name="comment" rows="3"></textarea></label>
+          <div class="inline" style="align-items:flex-start">
+            <div class="cover" id="tagCover">kein Cover</div>
+            <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start">
+              <label class="btn small" style="cursor:pointer"><span>Cover wählen …</span><input type="file" id="tagCoverFile" accept="image/jpeg,image/png" hidden></label>
+              <button class="btn small" type="button" id="tagCoverFind">Cover online suchen</button>
+              <button class="btn small" type="button" id="tagCoverDel">Cover entfernen</button>
+              <span class="hint">JPG oder PNG, max. 5 MB</span>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="inline" style="justify-content:space-between"><b style="font-size:13px">Titelliste und Kapitel</b><a class="btn small" id="tagTxt" href="#">Als .txt speichern</a></div>
+          <div class="tracklist" id="tagTracks"></div>
+          <span class="hint">Klick auf einen Titel spielt die Aufnahme ab dieser Stelle.</span>
+        </div>
+      </div>
+      <p class="form-err" id="tagErr" hidden></p>
+    </div>
+    <div class="dlg-foot"><label class="grow inline" style="gap:8px"><input type="checkbox" id="tagThenRename"><span>Danach nach Muster umbenennen</span></label>
+      <button class="btn" type="button" data-close>Abbrechen</button><button class="btn primary" type="submit" id="tagSave">Tags speichern</button></div>
+  </form>
+</dialog>
+
+<dialog id="cutDlg" class="wide" aria-labelledby="cutTitle">
+  <div class="dlg">
+    <div class="dlg-head"><div style="min-width:0"><h2 id="cutTitle">Titel schneiden</h2><div class="hint" id="cutSub" style="overflow-wrap:anywhere"></div></div>
+      <button class="icon-btn" type="button" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="dlg-body">
+      <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+        <label class="f">Verschiebung (Sekunden, ±)<input type="number" id="cutOffset" min="-120" max="120" step="1"></label>
+        <label class="f">Mindestlänge (Sekunden)<input type="number" id="cutMin" min="0" max="3600" step="1"></label>
+      </div>
+      <div class="prev-wrap" style="max-height:420px"><table id="cutTbl"></table></div>
+      <p class="hint" style="margin:0">Erster und letzter Titel sind meist angeschnitten und deshalb abgewählt, ebenso Senderkennungen und zu kurze Stücke. Haken setzen oder entfernen ändert die Auswahl. ▶ spielt die Aufnahme ab der Schnittstelle. Die Aufnahme selbst bleibt unverändert. Ist in den Einstellungen die Cover-Suche an, sucht der Recorder für jeden Titel ein Cover. Das dauert pro Titel etwa eine Sekunde.</p>
+      <p class="form-err" id="cutErr" hidden></p>
+    </div>
+    <div class="dlg-foot"><span class="grow" id="cutCount"></span>
+      <button class="btn" type="button" data-close>Abbrechen</button><button class="btn primary" id="cutGo" disabled>Schneiden</button></div>
+  </div>
+</dialog>
+
+<dialog id="emptyDlg" aria-labelledby="emptyTitle">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="emptyTitle">Leere Ordner entfernen</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="dlg-body">
+      <p style="margin:0" id="emptyText"></p>
+      <ul class="file-list" id="emptyList"></ul>
+      <p class="hint" style="margin:0">Entfernt werden nur Ordner ohne Inhalt. Systemdateien wie .DS_Store zählen nicht als Inhalt und werden mit entfernt. Die Hauptordner record, title und deleted bleiben immer.</p>
+    </div>
+    <div class="dlg-foot"><button class="btn" type="button" data-close>Abbrechen</button><button class="btn primary" id="emptyGo">Ordner entfernen</button></div>
+  </div>
+</dialog>
+
+<dialog id="trashDlg" aria-labelledby="trashTitle">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="trashTitle">In den Papierkorb</h2>
+      <button class="icon-btn" type="button" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="dlg-body">
+      <p style="margin:0" id="trashText"></p>
+      <ul class="file-list" id="trashList"></ul>
+      <p class="hint" style="margin:0" id="trashHint"></p>
+    </div>
+    <div class="dlg-foot"><button class="btn" type="button" data-close>Abbrechen</button><button class="btn primary" id="trashGo">In den Papierkorb legen</button></div>
+  </div>
+</dialog>
+
+<dialog id="binDlg" class="wide" aria-labelledby="binTitle">
+  <div class="dlg">
+    <div class="dlg-head"><div style="min-width:0"><h2 id="binTitle">Papierkorb</h2><div class="hint" id="binSub" style="overflow-wrap:anywhere"></div></div>
+      <button class="icon-btn" type="button" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="dlg-body">
+      <div class="prev-wrap" style="max-height:440px"><table id="binTbl"></table></div>
+      <p class="hint" style="margin:0" id="binHint"></p>
+    </div>
+    <div class="dlg-foot"><span class="grow" id="binCount"></span>
+      <button class="btn danger" id="binEmpty">Papierkorb leeren</button>
+      <button class="btn danger" id="binDelete" disabled>Endgültig löschen</button>
+      <button class="btn primary" id="binRestore" disabled>Wiederherstellen</button></div>
+  </div>
+</dialog>
+
+<dialog id="confirmDlg" aria-labelledby="confirmTitle">
+  <div class="dlg">
+    <div class="dlg-head"><h2 id="confirmTitle"></h2></div>
+    <div class="dlg-body"><p style="margin:0" id="confirmText"></p></div>
+    <div class="dlg-foot"><button class="btn" type="button" id="confirmNo">Abbrechen</button><button class="btn primary" id="confirmYes">OK</button></div>
+  </div>
+</dialog>
+
+<div class="player" id="player" hidden role="region" aria-label="Wiedergabe">
+  <button class="pp" id="plPP" aria-label="Pause"></button>
+  <span class="thumb pl" id="plCover"></span>
+  <div class="meta"><div class="t" id="plTitle"></div><div class="c" id="plChap"></div></div>
+  <button class="icon-btn" id="plPrev" aria-label="Vorheriges Kapitel" title="Vorheriges Kapitel / zurück"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+  <button class="icon-btn" id="plNext" aria-label="Nächstes Kapitel" title="Nächstes Kapitel / vor"><svg class="i" viewBox="0 0 24 24" style="fill:currentColor;stroke:none"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+  <div class="seek"><span id="plCur">0:00</span><div class="track" id="plTrack" role="slider" aria-label="Position" tabindex="0"><div id="plBar"></div></div><span id="plDur">0:00</span></div>
+  <button class="icon-btn" id="plClose" aria-label="Wiedergabe beenden" title="Wiedergabe beenden"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <audio id="plAudio" preload="metadata"></audio>
+</div>
+<script src="lang-en.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+// ---------- Sprache ----------
+// Quelltexte sind deutsch. Bei Englisch liefert t() die Übersetzung aus lang-en.js.
+let LANG = document.documentElement.lang === "en" ? "en" : "de";
+const AUTH = document.documentElement.dataset.auth || "login";
+function t(s, v) {
+  let r = LANG === "en" && window.SR_EN && SR_EN[s] != null ? SR_EN[s] : s;
+  if (v) r = r.replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m));
+  return r;
+}
+function translateDom(root) {
+  if (LANG !== "en" || !window.SR_EN) return;
+  root.querySelectorAll("[data-en]").forEach(el => { el.textContent = el.dataset.en; });   // gleiches deutsches Wort, andere Übersetzung
+  const w = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode: n =>
+    n.parentElement && !n.parentElement.closest("script,style,code,.mono,pre") && n.nodeValue.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT });
+  const nodes = []; while (w.nextNode()) nodes.push(w.currentNode);
+  nodes.forEach(n => { const k = n.nodeValue.trim(); if (SR_EN[k] != null) n.nodeValue = n.nodeValue.replace(k, SR_EN[k]); });
+  root.querySelectorAll("[placeholder],[title],[aria-label]").forEach(el => ["placeholder", "title", "aria-label"].forEach(a => {
+    const v = el.getAttribute(a); if (v && SR_EN[v] != null) el.setAttribute(a, SR_EN[v]); }));
+  root.querySelectorAll("option").forEach(o => { const k = o.textContent.trim(); if (SR_EN[k] != null) o.textContent = SR_EN[k]; });
+  root.querySelectorAll("input[type=text][value]").forEach(el => { const v = el.getAttribute("value"); if (SR_EN[v] != null) { el.setAttribute("value", SR_EN[v]); el.value = SR_EN[v]; } });
+}
+translateDom(document.body);
+document.title = t("Stream-Recorder");
+const LOC = LANG === "en" ? "en-GB" : "de-DE";
+const nf = new Intl.NumberFormat(LANG === "en" ? "en-US" : "de-DE");
+const num1 = x => x.toLocaleString(LANG === "en" ? "en-US" : "de-DE", { maximumFractionDigits: 1 });
+const I = {
+  edit: '<svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  x: '<svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  stop: '<svg class="i" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>',
+  clock: '<svg class="i" viewBox="0 0 24 24" style="width:14px;height:14px"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  dl: '<svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg>',
+  play: '<svg class="i" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>',
+  folder: '<svg class="i" viewBox="0 0 24 24"><path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>',
+};
+let S = { state: null, senders: [], hist: [], histFilter: "", view: "jobs" };
+
+async function api(path, opts = {}) {
+  const r = await fetch("api/" + path, { method: opts.method || "GET", headers: { "X-Recorder": "1", ...(opts.body ? { "content-type": "application/json" } : {}) },
+    body: opts.body ? JSON.stringify(opts.body) : undefined, credentials: "same-origin" });
+  if (r.status === 401) { if (AUTH === "login") location.href = "login"; throw new Error(t("nicht angemeldet")); }
+  const data = (r.headers.get("content-type") || "").includes("json") ? await r.json() : await r.text();
+  if (!r.ok) throw new Error((data && data.error) || ("HTTP " + r.status));
+  return data;
+}
+let toastT;
+function toast(msg, isErr) {
+  document.querySelector(".toast")?.remove(); clearTimeout(toastT);
+  const d = document.createElement("div"); d.className = "toast" + (isErr ? " err" : ""); d.setAttribute("role", "status"); d.textContent = msg;
+  document.body.appendChild(d); toastT = setTimeout(() => d.remove(), isErr ? 6000 : 3000);
+}
+// Rückfrage als eigener Dialog (window.confirm geht in der Home-Assistant-App nicht überall)
+function ask(title, text, ok = t("OK"), danger = false) {
+  return new Promise(res => {
+    const d = $("confirmDlg");
+    $("confirmTitle").textContent = title; $("confirmText").textContent = text;
+    $("confirmYes").textContent = ok; $("confirmYes").className = "btn " + (danger ? "danger-fill" : "primary");
+    const done = v => { d.close(); res(v); };
+    $("confirmYes").onclick = () => done(true); $("confirmNo").onclick = () => done(false);
+    d.oncancel = e => { e.preventDefault(); done(false); };
+    d.showModal(); $("confirmYes").focus();
+  });
+}
+
+// ---------- Formatierung ----------
+const pad = n => String(n).padStart(2, "0");
+const WD = LANG === "en" ? ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"] : ["So","Mo","Di","Mi","Do","Fr","Sa"];
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const dm = d => LANG === "en" ? `${d.getDate()} ${MON[d.getMonth()]}` : `${pad(d.getDate())}.${pad(d.getMonth()+1)}.`;
+function fmtDT(ts) { const d = new Date(ts * 1000); return `${WD[d.getDay()]} ${dm(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function fmtT(ts) { const d = new Date(ts * 1000); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function fmtDur(s) { if (s == null) return "–"; s = Math.round(s); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return h ? `${h}:${pad(m)}:${pad(x)}` : `${m}:${pad(x)}`; }
+function fmtMin(m) { m = Math.round(m); return m >= 60 ? `${Math.floor(m/60)} h${m%60 ? " " + m%60 + " min" : ""}` : `${m} min`; }
+function fmtBytes(b) { if (b == null) return "–"; if (b >= 1e9) return num1(b/1e9) + " GB"; if (b >= 1e6) return Math.round(b/1e6) + " MB"; if (b >= 1e3) return Math.round(b/1e3) + " kB"; return b + " B"; }
+function toLocalInput(ts) { const d = new Date(ts * 1000); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+function fmtIn(ts) { const d = ts - Date.now()/1000; if (d < 60) return t("gleich"); if (d < 3600) return t("in {n} min", {n: Math.round(d/60)}); if (d < 86400) return t("in {n} h", {n: Math.round(d/3600)}); return t("in {n} T", {n: Math.round(d/86400)}); }
+function fmtWhen(ts) { const d = new Date(ts * 1000), y = d.getFullYear() !== new Date().getFullYear();
+  return LANG === "en" ? `${WD[d.getDay()]} ${dm(d)}${y ? " " + d.getFullYear() : ""} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+    : `${WD[d.getDay()]} ${dm(d)}${y ? String(d.getFullYear()).slice(2) : ""} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+const nDat = n => n === 1 ? t("1 Datei") : t("{n} Dateien", {n: nf.format(n)});
+
+// ---------- Ansichten ----------
+function show(view) {
+  S.view = view;
+  document.querySelectorAll("nav button").forEach(b => b.dataset.view === view ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+  document.querySelectorAll(".view").forEach(v => { v.hidden = v.id !== "view-" + view; if (!v.hidden) v.style.display = "flex"; });
+  if (view === "jobs") { refresh(); refreshHist(); }
+  if (view === "library") loadLib();
+  if (view === "senders") loadSenders();
+  if (view === "settings") fillSettings();
+  if (view === "log") loadLog();
+  try { localStorage.setItem("sr-view", view); } catch {}
+}
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
+
+// ---------- Status ----------
+function renderStats(st) {
+  const tiles = [
+    [t("Geplant"), nf.format(st.planned), st.next ? t("nächste {when}", {when: fmtDT(st.next)}) : t("keine")],
+    [t("Läuft gerade"), nf.format(st.running), st.running ? `${nf.format(st.kbps)} kbit/s` : "–", st.running ? "rec" : ""],
+    [t("Erfolgreich"), nf.format(st.ok), t("letzte 30 Tage")],
+    [t("Abgebrochen / Fehler"), `${nf.format(st.aborted)} / ${nf.format(st.errors)}`, t("letzte 30 Tage")],
+    [t("Aufgenommen"), num1(st.hours) + " h", fmtBytes(st.bytes) + " · " + t("30 Tage")],
+    [t("Speicher frei"), fmtBytes(st.disk_free), t("im Speicherordner")],
+  ];
+  $("stats").innerHTML = tiles.map(([l, v, s, c]) => `<div class="card kpi ${c || ""}"><div class="l">${l}</div><div class="v">${v}</div><div class="s">${esc(s)}</div></div>`).join("");
+}
+function renderJobs(jobs) {
+  const head = `<thead><tr><th>${t("Status")}</th><th>${t("Start")}</th><th class="num">${t("Dauer")}</th><th>${t("Titel / Sendung")}</th><th>${t("Sender")}</th><th>${t("Wiederholung")}</th><th class="num">${t("Aktionen")}</th></tr></thead>`;
+  if (!jobs.length) { $("jobsTbl").innerHTML = head + `<tbody><tr><td colspan="7" class="empty">${t("Keine Aufträge. Lege einen mit „Neuer Auftrag“ an.")}</td></tr></tbody>`; return; }
+  $("jobsTbl").innerHTML = head + "<tbody>" + jobs.map(j => {
+    const r = j.running;
+    const st = r ? `<div class="recst"><b><span class="dot rec"></span>${r.connected ? t("Nimmt auf") : t("Verbinde …")} · ${fmtDur(r.elapsed_s)} / ${fmtDur(r.total_s)}</b>
+        <div class="bar"><div style="width:${(r.progress*100).toFixed(1)}%"></div></div>
+        <span class="sub">${fmtBytes(r.bytes)} · ${nf.format(r.kbps)} kbit/s${r.reconnects ? " · " + t("{n}× neu verbunden", {n: r.reconnects}) : ""}</span>
+        ${r.error ? `<span class="sub msg-err">${esc(r.error)}</span>` : ""}</div>`
+      : `<span class="sub" style="display:inline-flex;gap:6px;align-items:center;font-size:13px;color:var(--ink-2)">${I.clock}${t("Geplant")} · ${fmtIn(j.window_start)}</span>`;
+    const pp = (j.pre_min || j.post_min) ? `<div class="sub">${fmtT(j.window_start)}–${fmtT(j.window_end)} ${t("mit Vor-/Nachlauf")}</div>` : "";
+    const actions = r
+      ? `<button class="icon-btn danger" data-stop="${j.id}" aria-label="${t("Aufnahme abbrechen")}" title="${t("Aufnahme abbrechen")}">${I.stop}</button>`
+      : `<button class="icon-btn" data-edit="${j.id}" aria-label="${t("Bearbeiten")}" title="${t("Bearbeiten")}">${I.edit}</button>
+         <button class="icon-btn danger" data-del="${j.id}" aria-label="${t("Löschen")}" title="${t("Löschen")}">${I.x}</button>`;
+    return `<tr><td>${st}</td><td class="nw">${fmtDT(j.start)}${pp}</td><td class="num">${fmtMin(j.duration_min)}</td>
+      <td><div class="t">${esc(j.title)}</div>${j.host ? `<div class="sub">${esc(j.host)}</div>` : ""}${r && r.title ? `<div class="sub">♪ ${esc(r.title)}</div>` : ""}</td>
+      <td><div>${esc(j.sender || "–")}</div><div class="sub url" title="${esc(j.url)}">${esc(j.url)}</div></td>
+      <td><span class="badge">${esc(j.repeat_label)}</span></td>
+      <td class="num"><span class="row-actions">${actions}</span></td></tr>`;
+  }).join("") + "</tbody>";
+}
+const STATUS = () => ({ ok: t("Erfolgreich"), aborted: t("Abgebrochen"), error: t("Fehler") });
+function renderHist(rows) {
+  const head = `<thead><tr><th>${t("Status")}</th><th>${t("Zeit")}</th><th class="num">${t("Dauer ist / soll")}</th><th>${t("Titel / Datei")}</th><th>${t("ID3-Tags")}</th><th class="num">${t("Größe")}</th><th>${t("Meldung")}</th><th></th></tr></thead>`;
+  if (!rows.length) { $("histTbl").innerHTML = head + `<tbody><tr><td colspan="8" class="empty">${t("Noch nichts erledigt.")}</td></tr></tbody>`; return; }
+  $("histTbl").innerHTML = head + "<tbody>" + rows.map(h => `<tr>
+    <td><span class="pill ${h.status}">${STATUS()[h.status] || esc(h.status)}</span></td>
+    <td class="nw">${fmtDT(h.started)}–${h.ended ? fmtT(h.ended) : "?"}</td>
+    <td class="num">${fmtDur(h.duration_s)} / ${fmtDur(h.planned_s)}</td>
+    <td><div class="t">${esc(h.title)}</div><div class="sub">${h.file_name ? esc(h.file_name) : t("keine Datei")}${h.file_exists ? "" : h.file_name ? " " + t("(nicht mehr vorhanden)") : ""}</div></td>
+    <td class="sub">${esc(h.tags || "–")}</td>
+    <td class="num">${h.bytes ? fmtBytes(h.bytes) : "–"}</td>
+    <td class="${h.status === "error" ? "msg-err" : ""}" style="font-size:12px">${esc(h.message || "–")}</td>
+    <td class="num"><span class="row-actions">${h.file_exists ? `<a class="icon-btn" href="api/history/${h.id}/file" aria-label="${t("Datei herunterladen")}" title="${t("Herunterladen")}">${I.dl}</a>` : ""}
+      <button class="icon-btn" data-hdel="${h.id}" aria-label="${t("Eintrag aus der Liste entfernen")}" title="${t("Eintrag entfernen (Datei bleibt)")}">${I.x}</button></span></td></tr>`).join("") + "</tbody>";
+}
+async function refresh() {
+  try {
+    const st = await api("state");
+    S.state = st;
+    if (st.lang !== LANG) { location.reload(); return; }      // Sprache wurde umgestellt
+    $("schedDot").className = "dot " + (st.stats.running ? "rec" : "ok");
+    $("schedText").textContent = st.stats.running ? t("Aufnahme läuft ({n})", {n: st.stats.running}) : t("Scheduler aktiv");
+    $("userName").textContent = st.user || "–";
+    $("logoutBtn").hidden = st.auth !== "login";
+    $("targetDir").textContent = st.settings.record_dir;
+    $("ver").textContent = t("Stream-Recorder") + " " + st.version;
+    if (st.donate) $("donateBtn").href = st.donate;
+    const w = st.warnings || [];
+    $("warnBar").hidden = !w.length; $("warnBar").textContent = w.join(" · ");
+    setBinCount(st.trash);
+    if (S.view === "jobs") { renderStats(st.stats); renderJobs(st.jobs); }
+    $("updated").textContent = t("Stand {time}", {time: new Date().toLocaleTimeString(LOC)});
+  } catch (e) {
+    $("schedDot").className = "dot bad"; $("schedText").textContent = t("Server nicht erreichbar");
+  }
+}
+async function refreshHist() {
+  try { S.hist = await api("history" + (S.histFilter ? "?status=" + S.histFilter : "")); renderHist(S.hist); } catch {}
+}
+$("histSeg").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  S.histFilter = b.dataset.s;
+  $("histSeg").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  refreshHist();
+});
+
+// ---------- Tabellen-Aktionen ----------
+$("jobsTbl").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return;
+  try {
+    if (b.dataset.stop && await ask(t("Aufnahme abbrechen"), t("Laufende Aufnahme abbrechen? Die Datei bis hierhin bleibt erhalten."), t("Abbrechen"), true)) {
+      b.disabled = true; await api(`jobs/${b.dataset.stop}/stop`, { method: "POST" }); toast(t("Aufnahme abgebrochen")); }
+    if (b.dataset.del && await ask(t("Auftrag löschen"), t("Auftrag löschen?"), t("Löschen"), true)) { await api(`jobs/${b.dataset.del}`, { method: "DELETE" }); toast(t("Auftrag gelöscht")); }
+    if (b.dataset.edit) openJob(S.state.jobs.find(j => j.id === +b.dataset.edit));
+  } catch (err) { toast(err.message, true); }
+  refresh(); refreshHist();
+});
+$("histTbl").addEventListener("click", async e => {
+  const b = e.target.closest("button[data-hdel]"); if (!b) return;
+  try { await api(`history/${b.dataset.hdel}`, { method: "DELETE" }); refreshHist(); } catch (err) { toast(err.message, true); }
+});
+
+// ---------- Dialoge allgemein ----------
+document.querySelectorAll("dialog").forEach(d => d.addEventListener("click", e => { if (e.target.closest("[data-close]")) d.close(); }));
+async function loadSenders() {
+  S.senders = await api("senders");
+  $("sendersTbl").innerHTML = `<thead><tr><th>${t("Name")}</th><th>${t("Stream-URL")}</th><th class="num">${t("Aktionen")}</th></tr></thead><tbody>` +
+    (S.senders.length ? S.senders.map(s => `<tr><td class="t">${esc(s.name)}</td><td class="url" style="max-width:520px" title="${esc(s.url)}">${esc(s.url)}</td>
+      <td class="num"><span class="row-actions"><button class="btn small" data-test="${s.id}">${t("Testen")}</button>
+      <button class="icon-btn" data-sedit="${s.id}" aria-label="${t("Bearbeiten")}">${I.edit}</button>
+      <button class="icon-btn danger" data-sdel="${s.id}" aria-label="${t("Löschen")}">${I.x}</button></span></td></tr>`).join("")
+     : `<tr><td colspan="3" class="empty">${t("Noch keine Sender.")}</td></tr>`) + "</tbody>";
+  return S.senders;
+}
+function senderOptions(sel, withCustom = true) {
+  sel.innerHTML = S.senders.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join("") + (withCustom ? `<option value="">${t("Andere URL …")}</option>` : "");
+}
+
+// ---------- Auftrag ----------
+async function openJob(job) {
+  await loadSenders();
+  const f = $("jobForm"), d = S.state.settings;
+  senderOptions(f.sender_id);
+  f.reset(); $("jobErr").hidden = true;
+  $("jobDlgTitle").textContent = job ? t("Auftrag bearbeiten") : t("Neuer Auftrag");
+  f.id.value = job ? job.id : "";
+  f.title.value = job ? job.title : ""; f.host.value = job?.host || "";
+  const match = job ? S.senders.find(s => s.url === job.url) : S.senders[0];
+  f.sender_id.value = match ? match.id : ""; f.url.value = job && !match ? job.url : "";
+  const start = job ? job.start : Math.ceil(Date.now()/1000/900) * 900 + 900;
+  f.start.value = toLocalInput(start);
+  f.duration_min.value = job ? Math.round(job.duration_min) : 60;
+  f.pre_min.value = job ? job.pre_min : d.pre_roll_min; f.post_min.value = job ? job.post_min : d.post_roll_min;
+  f.repeat.value = job ? job.repeat : "once";
+  syncUrl(f, $("urlField")); summary();
+  $("jobDlg").showModal(); f.title.focus();
+}
+function syncUrl(f, field) { field.hidden = !!f.sender_id.value; f.url.required = !f.sender_id.value; }
+function summary() {
+  const f = $("jobForm"); const tm = new Date(f.start.value); if (isNaN(tm)) { $("jobSummary").textContent = ""; return; }
+  const dur = +f.duration_min.value || 0, pre = +f.pre_min.value || 0, post = +f.post_min.value || 0;
+  const a = new Date(tm - pre*60000), b = new Date(+tm + (dur + post)*60000);
+  $("jobSummary").textContent = t("Aufnahme {from}–{to} ({dur})", {from: `${pad(a.getHours())}:${pad(a.getMinutes())}`, to: `${pad(b.getHours())}:${pad(b.getMinutes())}`, dur: fmtMin(dur + pre + post)});
+}
+$("jobForm").addEventListener("input", e => { if (e.target.name === "sender_id") syncUrl($("jobForm"), $("urlField")); summary(); });
+$("jobForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target, id = f.id.value;
+  const body = { title: f.title.value, host: f.host.value, start: f.start.value, duration_min: f.duration_min.value,
+    pre_min: f.pre_min.value, post_min: f.post_min.value, repeat: f.repeat.value };
+  if (f.sender_id.value) body.sender_id = +f.sender_id.value; else body.url = f.url.value;
+  try { await api(id ? `jobs/${id}` : "jobs", { method: id ? "PUT" : "POST", body }); $("jobDlg").close(); toast(id ? t("Auftrag geändert") : t("Auftrag angelegt")); refresh(); }
+  catch (err) { $("jobErr").textContent = err.message; $("jobErr").hidden = false; }
+});
+$("newJobBtn").addEventListener("click", () => openJob(null));
+
+// ---------- Jetzt aufnehmen ----------
+$("nowBtn").addEventListener("click", async () => {
+  await loadSenders(); const f = $("nowForm"); senderOptions(f.sender_id); $("nowErr").hidden = true;
+  syncUrl(f, f.querySelector("[data-url]")); $("nowDlg").showModal();
+});
+$("nowForm").addEventListener("input", e => { if (e.target.name === "sender_id") syncUrl($("nowForm"), $("nowForm").querySelector("[data-url]")); });
+$("nowForm").addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target;
+  const body = { title: f.title.value, duration_min: f.duration_min.value };
+  if (f.sender_id.value) body.sender_id = +f.sender_id.value; else body.url = f.url.value;
+  try { await api("record-now", { method: "POST", body }); $("nowDlg").close(); toast(t("Aufnahme gestartet")); setTimeout(refresh, 800); }
+  catch (err) { $("nowErr").textContent = err.message; $("nowErr").hidden = false; }
+});
+
+// ---------- Sender ----------
+$("sendersTbl").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if (!b) return; const f = $("senderForm");
+  if (b.dataset.sedit) { const s = S.senders.find(x => x.id === +b.dataset.sedit); f.id.value = s.id; f.name.value = s.name; f.url.value = s.url; $("senderFormTitle").textContent = t("Sender bearbeiten"); clearTest(); f.name.focus(); }
+  if (b.dataset.sdel && await ask(t("Sender löschen"), t("Sender löschen? Geplante Aufträge behalten ihre URL."), t("Löschen"), true)) { await api(`senders/${b.dataset.sdel}`, { method: "DELETE" }); loadSenders(); }
+  if (b.dataset.test) { const s = S.senders.find(x => x.id === +b.dataset.test); testStream(s.url, b); }
+});
+$("senderForm").addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target;
+  try { await api("senders", { method: "POST", body: { id: f.id.value ? +f.id.value : null, name: f.name.value, url: f.url.value } });
+    toast(t("Sender gespeichert")); f.reset(); f.id.value = ""; $("senderFormTitle").textContent = t("Sender hinzufügen"); clearTest(); loadSenders(); }
+  catch (err) { toast(err.message, true); }
+});
+$("senderResetBtn").addEventListener("click", () => { const f = $("senderForm"); f.reset(); f.id.value = ""; $("senderFormTitle").textContent = t("Sender hinzufügen"); clearTest(); });
+// Testergebnis gehört zur eingetragenen URL: bei Änderung der URL verwerfen
+$("senderForm").url.addEventListener("input", clearTest);
+$("senderTestBtn").addEventListener("click", e => { const u = $("senderForm").url.value; if (!u) { toast(t("Bitte erst eine URL eintragen"), true); return; } testStream(u, e.target); });
+// Testergebnis entfernen. Die Nummer sorgt dafür, dass ein noch laufender Test
+// sein Ergebnis danach nicht wieder einblendet.
+let testSeq = 0;
+function clearTest() { testSeq++; $("testOut").innerHTML = ""; }
+async function testStream(url, btn) {
+  const seq = ++testSeq;
+  btn.disabled = true; const old = btn.textContent; btn.textContent = t("teste …");
+  $("testOut").innerHTML = `<div class="test-out">${t("Verbinde mit {url} …", {url: esc(url)})}</div>`;
+  try {
+    const r = await api("stream-test", { method: "POST", body: { url } });
+    if (seq !== testSeq) { btn.disabled = false; btn.textContent = old; return; }
+    const rows = r.ok ? [[t("Ergebnis"), `<span class="pill ok">${t("aufnahmefähig")}</span>`], [t("Format"), `${esc(r.content_type || "?")} → .${esc(r.extension)}`],
+      [t("Bitrate"), r.bitrate ? r.bitrate + " kbit/s" : "–"], [t("Sendername"), esc(r.name || "–")], [t("Genre"), esc(r.genre || "–")],
+      [t("Titel-Infos (ICY)"), r.metaint ? (r.title ? t("ja · gerade: {title}", {title: esc(r.title)}) : t("ja, noch kein Titel gesendet")) : t("nein")],
+      [t("Empfangen"), t("{bytes} in {s} s", {bytes: fmtBytes(r.bytes), s: r.seconds})], [t("Endgültige URL"), esc(r.final_url)]]
+      : [[t("Ergebnis"), `<span class="pill error">${t("nicht aufnahmefähig")}</span>`], [t("Fehler"), esc(r.error)]];
+    $("testOut").innerHTML = `<div class="test-out"><b>${esc(url)}</b><dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl></div>`;
+    if (S.view !== "senders") toast(r.ok ? t("Stream ist aufnahmefähig") : t("Stream-Test: {err}", {err: r.error}), !r.ok);
+  } catch (err) { if (seq === testSeq) $("testOut").innerHTML = `<div class="test-out msg-err">${esc(err.message)}</div>`; }
+  btn.disabled = false; btn.textContent = old;
+}
+
+// ---------- Einstellungen ----------
+let PH = { rec: [], cut: [], rename: [] };
+async function fillSettings() {
+  const s = await api("settings"), f = $("settingsForm"), c = $("cutForm"), o = $("optForm");
+  PH = s.placeholders;
+  o.language.value = s.language; o.trash_days.value = s.trash_days; o.prune_empty_dirs.checked = !!s.prune_empty_dirs;
+  $("recDir").textContent = s.record_dir; $("titleDir").textContent = s.title_dir;
+  f.folder_pattern.value = s.folder_pattern; f.file_pattern.value = s.file_pattern;
+  f.pre_roll_min.value = s.pre_roll_min; f.post_roll_min.value = s.post_roll_min;
+  $("recPh").textContent = PH.rec.map(x => `{${x}}`).join(" ");
+  c.cut_pattern.value = s.cut_pattern; c.cut_min_len.value = s.cut_min_len; c.cut_offset.value = s.cut_offset; c.cover_lookup.checked = !!s.cover_lookup;
+  $("cutPh").textContent = PH.cut.map(x => `{${x}}`).join(" ");
+  preview(); cutPreview();
+  const lang = s.language === "auto" ? t("automatisch → {lang}", {lang: s.lang === "en" ? "English" : "Deutsch"}) : (s.lang === "en" ? "English" : "Deutsch");
+  const access = [t("Seitenleiste von Home Assistant (Ingress)")];
+  access.push(s.direct ? t("direkter Zugriff mit Login aktiv (Benutzer {user}, interner Port {port})", {user: s.direct_user, port: s.direct_port})
+                       : t("direkter Zugriff aus (kein Benutzer/Passwort gesetzt)"));
+  const ha = !s.ha ? t("nicht verbunden (läuft nicht als Home-Assistant-App)") : s.ha_ok === false ? t("Fehler – siehe Log") : t("verbunden – Sensoren und Ereignisse aktiv");
+  $("sysInfo").innerHTML = [[t("Version"), S.state?.version], [t("Speicherordner"), s.storage], [t("Papierkorb"), s.trash_dir],
+    [t("Zugriff"), access.join(" · ")], [t("Home Assistant"), ha], [t("Sprache"), lang], [t("Daten"), s.data_dir], [t("Logdatei"), s.log_file]]
+    .map(([k, v], i) => `<dt>${k}</dt><dd>${i === 3 || i === 4 || i === 5 ? esc(v) : `<code>${esc(v)}</code>`}</dd>`).join("");
+}
+// Beispielwerte für die Vorschau – beide Namen (deutsch/englisch) für jeden Platzhalter
+const ALIAS = { station: "sender", title: "titel", host: "moderation", date: "datum", time: "zeit", year: "jahr", month: "monat", day: "tag", weekday: "wochentag", artist: "interpret", filename: "dateiname", show: "sendung", no: "nr" };
+function fillPattern(p, v) { return p.replace(/\{(\w+)\}/g, (m, k) => v[k] ?? v[ALIAS[k]] ?? m); }
+function exampleValues() {
+  const d = new Date();
+  return { sender: "sunshine live", titel: t("Lounge am Abend"), moderation: t("DJ Beispiel"), datum: `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,
+    zeit: "2000", jahr: String(d.getFullYear()), monat: pad(d.getMonth()+1), tag: pad(d.getDate()), wochentag: t("Samstag") };
+}
+function preview() {
+  const f = $("settingsForm");
+  $("patternPreview").textContent = [$("recDir").textContent, fillPattern(f.folder_pattern.value, exampleValues()), fillPattern(f.file_pattern.value, exampleValues()) + ".mp3"].filter(Boolean).join("/").replace(/\/+/g, "/");
+}
+$("settingsForm").addEventListener("input", preview);
+function cutPreview() {
+  const c = $("cutForm"), v = exampleValues();
+  Object.assign(v, { sender: "sunshine live Lounge", sendung: t("Lounge am Abend"), nr: "03", interpret: t("Künstler"), titel: t("Titel") });
+  $("cutPreview").textContent = [$("titleDir").textContent, fillPattern(c.cut_pattern.value, v) + ".mp3"].join("/").replace(/\/+/g, "/");
+}
+$("cutForm").addEventListener("input", cutPreview);
+$("optForm").addEventListener("submit", async e => {
+  e.preventDefault(); const o = e.target;
+  try { const r = await api("settings", { method: "PUT", body: { language: o.language.value, trash_days: o.trash_days.value, prune_empty_dirs: o.prune_empty_dirs.checked } });
+    if (r.lang !== LANG) { try { localStorage.setItem("sr-view", "settings"); } catch {} location.reload(); return; }
+    toast(t("Einstellungen gespeichert")); fillSettings(); }
+  catch (err) { toast(err.message, true); }
+});
+$("cutForm").addEventListener("submit", async e => {
+  e.preventDefault(); const c = e.target;
+  try { await api("settings", { method: "PUT", body: { cut_pattern: c.cut_pattern.value,
+      cut_min_len: c.cut_min_len.value, cut_offset: c.cut_offset.value, cover_lookup: c.cover_lookup.checked } }); toast(t("Einstellungen gespeichert")); fillSettings(); }
+  catch (err) { toast(err.message, true); }
+});
+$("settingsForm").addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target;
+  try { await api("settings", { method: "PUT", body: { folder_pattern: f.folder_pattern.value, file_pattern: f.file_pattern.value,
+      pre_roll_min: f.pre_roll_min.value, post_roll_min: f.post_roll_min.value } }); toast(t("Einstellungen gespeichert")); refresh(); }
+  catch (err) { toast(err.message, true); }
+});
+
+// ---------- Log ----------
+async function loadLog() {
+  try { const tx = await api("log?lines=400");
+    $("logPre").innerHTML = esc(tx).split("\n").map(l => / (ERROR|CRITICAL) /.test(l) ? `<span class="e">${l}</span>` : / WARNING /.test(l) ? `<span class="w">${l}</span>` : l).join("\n") || t("Log ist leer.");
+    $("logPre").scrollTop = $("logPre").scrollHeight; $("logFile").textContent = S.state?.settings.log_file || ""; } catch (err) { toast(err.message, true); }
+}
+$("logRefresh").addEventListener("click", loadLog);
+$("logClear").addEventListener("click", async () => {
+  if (!await ask(t("Log leeren"), t("Alle Einträge der Logdatei löschen?"), t("Log leeren"), true)) return;
+  try { await api("log/clear", { method: "POST" }); toast(t("Log geleert")); loadLog(); } catch (err) { toast(err.message, true); }
+});
+
+// ---------- Aufnahmen ----------
+const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+const LI = {
+  tag: '<svg class="i" viewBox="0 0 24 24"><path d="M20 12l-8 8-9-9V3h8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>',
+  ren: '<svg class="i" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg>',
+  note: '<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
+  cut: '<svg class="i" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.1 8.1L20 20M8.1 15.9L20 4"/></svg>',
+  trash: '<svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+  first: '<svg class="i" viewBox="0 0 24 24"><path d="M17 6l-6 6 6 6M8 6v12"/></svg>',
+  prev: '<svg class="i" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+  next: '<svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
+  last: '<svg class="i" viewBox="0 0 24 24"><path d="M7 6l6 6-6 6M16 6v12"/></svg>',
+};
+const L = { q: "", album: "", tags: "all", kind: "all", sort: "when", dir: "desc", page: 1, per: 25, data: null, sel: new Set(), loading: false };
+try { const p = +localStorage.getItem("sr-lib-per"); if ([0, 10, 25, 50, 100].includes(p) && localStorage.getItem("sr-lib-per") !== null) L.per = p; } catch {}
+const enc = encodeURIComponent;
+
+async function loadLib(rescan) {
+  if (L.loading && !rescan) return;
+  L.loading = true;
+  const qs = new URLSearchParams({ q: L.q, album: L.album, tags: L.tags, kind: L.kind, sort: L.sort, dir: L.dir, page: L.page, per: L.per });
+  if (rescan) qs.set("rescan", "1");
+  try {
+    const d = await api("library?" + qs);
+    L.data = d; L.page = d.page;
+    const valid = new Set(d.all_paths);
+    // Auswahl nur für Dateien behalten, die es noch gibt (und die zum Filter passen)
+    L.sel = new Set([...L.sel].filter(p => valid.has(p)));
+    setBinCount(d.trash);
+    renderLib();
+  } catch (err) { toast(err.message, true); }
+  L.loading = false;
+}
+function setBinCount(tr) {
+  if (!tr) return;
+  $("libBinCount").textContent = tr.count ? `${nf.format(tr.count)} · ${fmtBytes(tr.bytes)}` : "";
+  $("libBinCount").hidden = !tr.count;
+}
+function renderLib() {
+  const d = L.data, st = d.stats;
+  $("libFacts").innerHTML = `<span>${t("<b>{a}</b> Aufnahmen · <b>{b}</b> Einzeltitel", {a: nf.format(st.recordings), b: nf.format(st.tracks)})}</span><span>${t("<b>{size}</b> belegt", {size: fmtBytes(st.bytes)})}</span>
+    <span>${t("<b>{h} h</b> Spieldauer", {h: num1(st.seconds/3600)})}</span>
+    ${st.incomplete ? `<span><span class="dot" style="background:var(--warning)"></span> ${t("<b>{n}</b> ohne vollständige Tags", {n: nf.format(st.incomplete)})}</span>` : ""}`;
+  $("libRoot").innerHTML = `<code>${esc(d.root)}</code> · ${t("eingelesen {time}", {time: new Date(d.scanned_at*1000).toLocaleTimeString(LOC,{hour:"2-digit",minute:"2-digit"})})}`;
+  const cur = $("libAlbum").value;
+  $("libAlbum").innerHTML = `<option value="">${t("Alle Sender / Alben")}</option>` + d.albums.map(a => `<option value="${esc(a)}">${esc(a)}</option>`).join("") + `<option value="__none__">${t("ohne Album")}</option>`;
+  $("libAlbum").value = L.album || cur || "";
+  // Rücknahme
+  if (d.undo) {
+    $("libUndo").hidden = false;
+    $("libUndo").innerHTML = `<span>${t("Letzte Umbenennung: <b>{n}</b> · {when}", {n: nDat(d.undo.count), when: fmtWhen(d.undo.ts)})}</span>
+      <span class="end"><button class="btn small" id="libUndoBtn">${t("Zurücknehmen")}</button></span>`;
+    $("libUndoBtn").onclick = undoRename;
+  } else $("libUndo").hidden = true;
+  renderSel();
+  // Tabelle
+  const sortBtn = (k, label) => `<button class="sort" data-sort="${k}" ${L.sort === k ? `aria-sort="${L.dir === "desc" ? "descending" : "ascending"}"` : ""}>${label}${L.sort === k ? (L.dir === "desc" ? " ↓" : " ↑") : ""}</button>`;
+  const pageAll = d.items.length && d.items.every(i => L.sel.has(i.path));
+  const head = `<thead><tr><th style="width:28px"><input type="checkbox" id="libPageAll" aria-label="${t("Alle auf dieser Seite auswählen")}" ${pageAll ? "checked" : ""}></th><th style="width:40px"></th>
+    <th>${sortBtn("title",t("Titel"))} / ${sortBtn("name",t("Datei"))}</th><th>${sortBtn("artist",t("Interpret"))}</th><th>${sortBtn("album",t("Sender (Album)"))}</th>
+    <th>${sortBtn("when",t("Aufgenommen"))}</th><th class="num">${sortBtn("duration",t("Dauer"))}</th><th class="num">${sortBtn("size",t("Größe"))}</th>
+    <th>${t("ID3-Tags")}</th><th>${t("Status")}</th><th class="num">${t("Aktionen")}</th></tr></thead>`;
+  if (!d.root_exists) { $("libTbl").innerHTML = head + `<tbody><tr><td colspan="11" class="empty msg-err">${t("Der Speicherordner existiert nicht oder ist nicht erreichbar (z. B. Netzlaufwerk nicht eingebunden).")}</td></tr></tbody>`; $("libPager").innerHTML = ""; return; }
+  if (!d.items.length) { $("libTbl").innerHTML = head + `<tbody><tr><td colspan="11" class="empty">${st.files ? t("Keine Aufnahmen passen zum Filter.") : t("Es liegen noch keine Aufnahmen vor.")}</td></tr></tbody>`; }
+  else $("libTbl").innerHTML = head + "<tbody>" + d.items.map(i => {
+    const p = esc(i.path), playing = PL.path === i.path, sel = L.sel.has(i.path);
+    const tagChip = { full: t("vollständig"), partial: t("unvollständig"), none: t("keine Tags"), unknown: t("nicht lesbar") }[i.tag_state];
+    const tagInfo = i.tag_state === "partial" ? t("fehlt: {list}", {list: i.missing.join(", ")})
+      : i.tag_state === "unknown" ? esc(i.read_error || "")
+      : [i.tracks ? t("Titelliste ({n})", {n: i.tracks}) : "", i.chapters ? t("Kapitel") : "", i.has_cover ? t("Cover") : ""].filter(Boolean).join(" · ");
+    const h = i.history;
+    const status = i.kind === "track" ? `<span class="pill track">${t("Einzeltitel")}</span>${i.source ? `<div class="sub" style="max-width:190px;white-space:normal;overflow-wrap:anywhere" title="${esc(i.source)}">${t("aus: {src}", {src: esc(i.source.split("/").pop().replace(" @ ", " · " + t("ab") + " "))})}</div>` : ""}`
+      : h ? `<span class="pill ${h.status === "running" ? "aborted" : h.status}">${STATUS()[h.status] || t("läuft")}</span>${h.message ? `<div class="sub" style="max-width:180px">${esc(h.message)}</div>` : ""}`
+      : `<span class="pill ext">${t("Extern")}</span><div class="sub">${t("nicht vom Recorder")}</div>`;
+    const cutTitle = i.cuttable ? t("In Einzeltitel schneiden") : i.kind === "track" ? t("Ist schon ein Einzeltitel") : !i.editable ? t("Schneiden geht nur bei MP3") : t("Keine Titelliste zum Schneiden");
+    return `<tr class="${sel ? "sel" : ""} ${playing ? "playing" : ""}" data-path="${p}">
+      <td><input type="checkbox" data-sel ${sel ? "checked" : ""} aria-label="${t("{name} auswählen", {name: esc(i.name)})}"></td>
+      <td><button class="playbtn ${playing && !PL.audio.paused ? "on" : ""}" data-play aria-label="${playing && !PL.audio.paused ? t("Pause") : t("Abspielen")}">${playing && !PL.audio.paused ? ICON_PAUSE : ICON_PLAY}</button></td>
+      <td style="max-width:380px"><div class="tcell"><span class="thumb">${i.has_cover ? `<img alt="" loading="lazy" src="api/library/cover?path=${enc(i.path)}&v=${Math.round(i.mtime)}">` : LI.note}</span>
+        <div style="min-width:0"><div class="t">${esc(i.title || i.name.replace(/\.[^.]+$/, ""))}</div><div class="sub">${esc(i.name)}</div>${i.folder ? `<div class="sub dimmed">${esc(i.folder)}</div>` : ""}</div></div></td>
+      <td class="${i.artist ? "" : "dimmed"}">${esc(i.artist || "–")}</td>
+      <td class="${i.album ? "" : "dimmed"}">${esc(i.album || "–")}</td>
+      <td class="nw">${fmtWhen(i.when)}</td>
+      <td class="num">${i.duration ? fmtDur(i.duration) : "–"}</td>
+      <td class="num">${fmtBytes(i.size)}</td>
+      <td><span class="chip ${i.tag_state}">${tagChip}</span>${tagInfo ? `<div class="sub">${tagInfo}</div>` : ""}</td>
+      <td class="nw">${status}</td>
+      <td class="num"><span class="row-actions">
+        <button class="icon-btn" data-row="tags" aria-label="${t("Tags bearbeiten")}" title="${t("Tags bearbeiten")}">${LI.tag}</button>
+        <button class="icon-btn" data-row="cut" aria-label="${t("In Einzeltitel schneiden")}" title="${cutTitle}" ${i.cuttable ? "" : "disabled"}>${LI.cut}</button>
+        <button class="icon-btn" data-row="rename" aria-label="${t("Umbenennen")}" title="${t("Nach Tags umbenennen")}">${LI.ren}</button>
+        <a class="icon-btn" href="api/library/stream?path=${enc(i.path)}&dl=1" aria-label="${t("Herunterladen")}" title="${t("Herunterladen")}">${I.dl}</a>
+        <button class="icon-btn danger" data-row="trash" aria-label="${t("In den Papierkorb")}" title="${t("In den Papierkorb")}">${LI.trash}</button></span></td></tr>`;
+  }).join("") + "</tbody>";
+  // Seiten
+  const from = d.total ? (d.per ? (d.page - 1) * d.per + 1 : 1) : 0, to = d.per ? Math.min(d.total, d.page * d.per) : d.total;
+  $("libPager").innerHTML = `<span>${t("{from}–{to} von {total}", {from: nf.format(from), to: nf.format(to), total: nf.format(d.total)})}${d.total !== st.files ? " " + t("(gefiltert, insgesamt {n})", {n: nf.format(st.files)}) : ""}</span>
+    <span class="end"><label class="inline" style="gap:6px">${t("pro Seite")} <select id="libPer">${[10,25,50,100,0].map(n => `<option value="${n}" ${n === d.per ? "selected" : ""}>${n || t("alle")}</option>`).join("")}</select></label>
+    <button class="icon-btn" data-page="1" aria-label="${t("Erste Seite")}" ${d.page <= 1 ? "disabled" : ""}>${LI.first}</button>
+    <button class="icon-btn" data-page="${d.page - 1}" aria-label="${t("Vorherige Seite")}" ${d.page <= 1 ? "disabled" : ""}>${LI.prev}</button>
+    <span style="padding:0 6px">${t("Seite {p} von {n}", {p: d.page, n: d.pages})}</span>
+    <button class="icon-btn" data-page="${d.page + 1}" aria-label="${t("Nächste Seite")}" ${d.page >= d.pages ? "disabled" : ""}>${LI.next}</button>
+    <button class="icon-btn" data-page="${d.pages}" aria-label="${t("Letzte Seite")}" ${d.page >= d.pages ? "disabled" : ""}>${LI.last}</button></span>`;
+}
+function renderSel() {
+  const n = L.sel.size, d = L.data;
+  $("libSel").hidden = !n;
+  $("libSelCount").textContent = t("{n} ausgewählt", {n: nf.format(n)});
+  $("libSel").querySelector('[data-act="tags"]').disabled = n !== 1;
+  $("libSel").querySelector('[data-act="tags"]').title = n === 1 ? "" : t("Tags bearbeiten geht für eine Datei");
+  const all = d ? d.all_paths.length : 0;
+  $("libSelAll").hidden = !d || n >= all;
+  $("libSelAll").textContent = t("Alle {n} Treffer auswählen", {n: nf.format(all)});
+}
+const pathsSel = () => [...L.sel];
+const itemOf = path => L.data?.items.find(i => i.path === path);
+
+// Filter, Sortierung, Seiten
+let qT;
+$("libQ").addEventListener("input", e => { clearTimeout(qT); qT = setTimeout(() => { L.q = e.target.value.trim(); L.page = 1; loadLib(); }, 250); });
+$("libAlbum").addEventListener("change", e => { L.album = e.target.value; L.page = 1; loadLib(); });
+$("libTags").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; L.tags = b.dataset.t; L.page = 1;
+  $("libTags").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); loadLib(); });
+$("libRescan").addEventListener("click", () => loadLib(true));
+let emptyDirs = [];
+$("libEmpty").addEventListener("click", async () => {
+  const b = $("libEmpty"); b.disabled = true;
+  try {
+    const r = await api("library/empty-dirs");
+    emptyDirs = r.dirs;
+    if (!emptyDirs.length) { toast(t("Keine leeren Ordner gefunden")); return; }
+    $("emptyText").textContent = emptyDirs.length === 1 ? t("Dieser Ordner ist leer:") : t("Diese {n} Ordner sind leer:", {n: nf.format(emptyDirs.length)});
+    $("emptyList").innerHTML = emptyDirs.slice(0, 300).map(d => `<li>${esc(d.path)}</li>`).join("") + (emptyDirs.length > 300 ? `<li class="dimmed">${t("… und {n} weitere", {n: emptyDirs.length - 300})}</li>` : "");
+    $("emptyGo").textContent = emptyDirs.length === 1 ? t("1 Ordner entfernen") : t("{n} Ordner entfernen", {n: nf.format(emptyDirs.length)});
+    $("emptyDlg").showModal();
+  } catch (err) { toast(err.message, true); }
+  finally { b.disabled = false; }
+});
+$("emptyGo").addEventListener("click", async () => {
+  $("emptyGo").disabled = true;
+  try {
+    const r = await api("library/empty-dirs", { method: "POST", body: { dirs: emptyDirs.map(d => d.abs) } });
+    $("emptyDlg").close();
+    toast((r.removed === 1 ? t("1 leerer Ordner entfernt") : t("{n} leere Ordner entfernt", {n: r.removed})) + (r.skipped.length ? " · " + t("{n} nicht (inzwischen nicht mehr leer)", {n: r.skipped.length}) : ""));
+    loadLib(true);
+  } catch (err) { toast(err.message, true); }
+  $("emptyGo").disabled = false;
+});
+$("libKind").addEventListener("click", e => { const b = e.target.closest("button"); if (!b) return; L.kind = b.dataset.k; L.page = 1;
+  $("libKind").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b)); loadLib(); });
+
+// Schneiden
+const C = { paths: [], files: [], sel: new Map(), t: null, seq: 0 };
+function openCut(paths) {
+  if (!paths.length) return;
+  C.paths = paths; C.files = []; C.sel = new Map();
+  $("cutTitle").textContent = paths.length === 1 ? t("Aufnahme in Einzeltitel schneiden") : t("{n} Aufnahmen in Einzeltitel schneiden", {n: nf.format(paths.length)});
+  $("cutOffset").value = ""; $("cutMin").value = "";
+  $("cutErr").hidden = true; $("cutTbl").innerHTML = `<tbody><tr><td class="empty">${t("lädt …")}</td></tr></tbody>`; $("cutGo").disabled = true; $("cutCount").textContent = "";
+  $("cutDlg").showModal(); loadCut();
+}
+function loadCut() {
+  clearTimeout(C.t);
+  C.t = setTimeout(async () => {
+    const seq = ++C.seq;
+    try {
+      const r = await api("library/cut/preview", { method: "POST", body: { paths: C.paths, offset: $("cutOffset").value, min_len: $("cutMin").value } });
+      if (seq !== C.seq) return;
+      if ($("cutOffset").value === "") $("cutOffset").value = r.offset;
+      if ($("cutMin").value === "") $("cutMin").value = r.min_len;
+      C.files = r.files;
+      C.sel = new Map(r.files.map(f => [f.path, new Set(f.segments.filter(x => x.selected).map(x => x.i))]));
+      $("cutSub").textContent = t("Ziel: {path}", {path: r.files.find(f => f.folder)?.folder || r.cut_dir});
+      $("cutErr").hidden = true;
+      renderCut();
+    } catch (err) { if (seq !== C.seq) return; $("cutErr").textContent = err.message; $("cutErr").hidden = false; $("cutGo").disabled = true; }
+  }, 300);
+}
+function renderCut() {
+  const multi = C.files.length > 1;
+  let rows = `<thead><tr><th style="width:28px"></th><th style="width:36px"></th><th>${t("Von – bis")}</th><th class="num">${t("Länge")}</th><th>${t("Interpret – Titel")}</th><th>${t("Hinweis")}</th></tr></thead><tbody>`;
+  C.files.forEach(f => {
+    if (multi) rows += `<tr class="grp"><td colspan="6">${esc(f.title)} <span class="sub" style="font-weight:400">· ${esc(f.name)}</span></td></tr>`;
+    if (!f.ok) { rows += `<tr class="off"><td></td><td></td><td colspan="4"><span class="note warn">${esc(f.error)}</span></td></tr>`; return; }
+    const sel = C.sel.get(f.path);
+    f.segments.forEach(x => {
+      const on = sel.has(x.i);
+      rows += `<tr class="${on ? "" : "off"}" data-f="${esc(f.path)}" data-i="${x.i}">
+        <td><input type="checkbox" data-cut ${on ? "checked" : ""} aria-label="${t("Titel {n} schneiden", {n: x.i + 1})}"></td>
+        <td><button class="playbtn" type="button" data-cplay="${x.start}" aria-label="${t("Ab hier abspielen")}">${ICON_PLAY}</button></td>
+        <td class="nw mono" style="font-size:12px">${fmtDur(x.start)} – ${fmtDur(x.end)}</td>
+        <td class="num">${fmtDur(x.dur)}</td>
+        <td><span class="t">${esc(x.artist || "–")}</span> – ${esc(x.title)}</td>
+        <td>${x.reason ? `<span class="note ${on ? "ok" : "same"}">${esc(x.reason)}</span>` : (on ? `<span class="note ok">${t("wird geschnitten")}</span>` : `<span class="note same">${t("abgewählt")}</span>`)}</td></tr>`;
+    });
+  });
+  $("cutTbl").innerHTML = rows + "</tbody>";
+  updCutCount();
+}
+function updCutCount() {
+  let n = 0, files = 0;
+  C.sel.forEach(set => { n += set.size; if (set.size) files++; });
+  $("cutCount").textContent = n ? (files === 1 ? t("{n} Titel aus 1 Aufnahme", {n}) : t("{n} Titel aus {f} Aufnahmen", {n, f: files})) : t("Kein Titel ausgewählt");
+  $("cutGo").disabled = !n; $("cutGo").textContent = n === 1 ? t("1 Titel schneiden") : t("{n} Titel schneiden", {n});
+}
+$("cutTbl").addEventListener("change", e => {
+  if (!e.target.matches("[data-cut]")) return;
+  const tr = e.target.closest("tr"), set = C.sel.get(tr.dataset.f), i = +tr.dataset.i;
+  e.target.checked ? set.add(i) : set.delete(i);
+  tr.classList.toggle("off", !e.target.checked);
+  const note = tr.querySelector("td:last-child .note");
+  const seg = C.files.find(f => f.path === tr.dataset.f).segments.find(x => x.i === i);
+  if (note) { note.className = "note " + (e.target.checked ? "ok" : "same"); note.textContent = seg.reason || (e.target.checked ? t("wird geschnitten") : t("abgewählt")); }
+  updCutCount();
+});
+$("cutTbl").addEventListener("click", e => { const b = e.target.closest("[data-cplay]"); if (!b) return; playPath(b.closest("tr").dataset.f, +b.dataset.cplay); });
+["cutOffset", "cutMin"].forEach(id => $(id).addEventListener("input", loadCut));
+$("cutGo").addEventListener("click", async () => {
+  const items = [...C.sel].filter(([, set]) => set.size).map(([path, set]) => ({ path, selected: [...set] }));
+  $("cutGo").disabled = true; const old = $("cutGo").textContent; $("cutGo").textContent = t("schneide …");
+  try {
+    const r = await api("library/cut", { method: "POST", body: { items, offset: $("cutOffset").value, min_len: $("cutMin").value } });
+    $("cutDlg").close();
+    const errs = r.files.filter(f => f.error);
+    toast(t("{n} Einzeltitel angelegt", {n: r.created}) + (r.cover_lookup ? " · " + t("{n} Cover online gefunden", {n: r.covers_online}) : "")
+      + (errs.length ? " · " + t("Fehler: {list}", {list: errs.map(f => f.error).join("; ")}) : ""), errs.length > 0);
+    loadLib(true);
+  } catch (err) { $("cutErr").textContent = err.message; $("cutErr").hidden = false; $("cutGo").disabled = false; $("cutGo").textContent = old; }
+});
+$("libPager").addEventListener("click", e => { const b = e.target.closest("button[data-page]"); if (!b || b.disabled) return; L.page = +b.dataset.page; loadLib(); });
+$("libPager").addEventListener("change", e => { if (e.target.id !== "libPer") return; L.per = +e.target.value; L.page = 1;
+  try { localStorage.setItem("sr-lib-per", L.per); } catch {} loadLib(); });
+$("libTbl").addEventListener("click", e => {
+  const s = e.target.closest("button.sort");
+  if (s) { const k = s.dataset.sort; if (L.sort === k) L.dir = L.dir === "desc" ? "asc" : "desc"; else { L.sort = k; L.dir = ["when","size","duration"].includes(k) ? "desc" : "asc"; } L.page = 1; loadLib(); return; }
+  const tr = e.target.closest("tr[data-path]"); if (!tr) return;
+  const path = tr.dataset.path;
+  if (e.target.closest("[data-play]")) { togglePlay(path); return; }
+  const act = e.target.closest("[data-row]")?.dataset.row;
+  if (act === "tags") openTags(path);
+  if (act === "rename") openRename([path]);
+  if (act === "cut") openCut([path]);
+  if (act === "trash") openTrash([path]);
+});
+$("libTbl").addEventListener("change", e => {
+  if (e.target.id === "libPageAll") { L.data.items.forEach(i => e.target.checked ? L.sel.add(i.path) : L.sel.delete(i.path)); renderLib(); return; }
+  if (e.target.matches("[data-sel]")) { const p = e.target.closest("tr").dataset.path; e.target.checked ? L.sel.add(p) : L.sel.delete(p);
+    e.target.closest("tr").classList.toggle("sel", e.target.checked); renderSel();
+    const pa = $("libPageAll"); if (pa) pa.checked = L.data.items.every(i => L.sel.has(i.path)); }
+});
+$("libSel").addEventListener("click", async e => {
+  const act = e.target.closest("[data-act]")?.dataset.act; if (!act) return;
+  if (act === "none") { L.sel.clear(); renderLib(); }
+  if (act === "all") { L.data.all_paths.forEach(p => L.sel.add(p)); renderLib(); }
+  if (act === "rename") openRename(pathsSel());
+  if (act === "cut") openCut(pathsSel());
+  if (act === "tags" && L.sel.size === 1) openTags(pathsSel()[0]);
+  if (act === "trash") openTrash(pathsSel());
+  if (act === "covers") {
+    const b = e.target.closest("[data-act]"); b.disabled = true; const old = b.textContent; b.textContent = t("suche …");
+    try { const r = await api("library/covers", { method: "POST", body: { paths: pathsSel() } });
+      const parts = [t("{files} mit Cover versehen", {files: nDat(r.found)})];
+      if (r.missing.length) parts.push(t("{n} ohne Treffer", {n: r.missing.length}));
+      if (r.skipped.length) parts.push(t("{n} übersprungen ({why})", {n: r.skipped.length, why: [...new Set(r.skipped.map(x => x.split(": ").pop()))].join(", ")}));
+      toast(parts.join(" · "), !r.found && (r.missing.length || r.skipped.length));
+      loadLib(true); } catch (err) { toast(err.message, true); }
+    b.disabled = false; b.textContent = old;
+  }
+  if (act === "fill") {
+    try { const r = await api("library/fill", { method: "POST", body: { paths: pathsSel() } });
+      toast(t("{files} ergänzt", {files: nDat(r.done)}) + (r.skipped.length ? " · " + t("{n} übersprungen: {list}", {n: r.skipped.length, list: r.skipped.slice(0, 3).join("; ") + (r.skipped.length > 3 ? " …" : "")}) : ""), !r.done && r.skipped.length);
+      loadLib(true); } catch (err) { toast(err.message, true); }
+  }
+  if (act === "download") {
+    const ps = pathsSel();
+    if (ps.length > 10 && !await ask(t("Herunterladen"), t("{n} Dateien einzeln herunterladen? Der Browser fragt eventuell nach, ob mehrere Downloads erlaubt sind.", {n: ps.length}), t("Herunterladen"))) return;
+    ps.forEach((p, k) => setTimeout(() => { const a = document.createElement("a"); a.href = `api/library/stream?path=${enc(p)}&dl=1`; a.download = ""; document.body.appendChild(a); a.click(); a.remove(); }, k * 400));
+  }
+});
+
+// Umbenennen
+const R = { paths: [], t: null, seq: 0 };
+function renderChips() {
+  const names = L.data?.rename_placeholders || ["titel","interpret","album","genre","datum","zeit","jahr","monat","tag","wochentag","dateiname"];
+  $("renChips").innerHTML = `<span class="hint">${t("Einfügen:")}</span>`;
+  names.forEach(p => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = `{${p}}`;
+    b.onclick = () => { const f = $("renPattern"), s = f.selectionStart ?? f.value.length, e2 = f.selectionEnd ?? s;
+      f.value = f.value.slice(0, s) + b.textContent + f.value.slice(e2); f.focus(); f.selectionStart = f.selectionEnd = s + b.textContent.length; previewRename(); };
+    $("renChips").appendChild(b);
+  });
+}
+function openRename(paths) {
+  if (!paths.length) return;
+  R.paths = paths;
+  renderChips();
+  $("renTitle").textContent = paths.length === 1 ? t("Datei nach Tags umbenennen") : t("{n} Dateien nach Tags umbenennen", {n: nf.format(paths.length)});
+  $("renPattern").value = L.data?.rename_pattern || "{datum}_{zeit}_{interpret} - {titel}";
+  let skip = true; try { skip = localStorage.getItem("sr-ren-skip") !== "0"; } catch {}
+  $("renSkip").checked = skip;
+  $("renErr").hidden = true; $("renPrev").innerHTML = ""; $("renGo").disabled = true;
+  $("renDlg").showModal(); previewRename();
+}
+function previewRename() {
+  clearTimeout(R.t);
+  R.t = setTimeout(async () => {
+    const seq = ++R.seq;
+    try {
+      const r = await api("library/rename/preview", { method: "POST", body: { paths: R.paths, pattern: $("renPattern").value, skip_empty: $("renSkip").checked } });
+      if (seq !== R.seq) return;
+      $("renErr").hidden = true;
+      $("renPrev").innerHTML = `<thead><tr><th>${t("Bisher")}</th><th></th><th>${t("Neu")}</th><th>${t("Hinweis")}</th></tr></thead><tbody>` + r.plan.map(x =>
+        `<tr><td class="sub" style="font-size:13px">${esc(x.old)}</td><td class="dimmed">→</td><td class="${x.action === "rename" ? "t" : "dimmed"}">${esc(x.new)}</td>
+         <td><span class="note ${x.level}">${esc(x.note)}</span></td></tr>`).join("") + "</tbody>";
+      const keep = r.plan.length - r.count;
+      $("renCount").textContent = (r.count === 1 ? t("1 Datei wird umbenannt") : t("{n} Dateien werden umbenannt", {n: r.count}))
+        + (keep ? " · " + (keep === 1 ? t("1 bleibt unverändert") : t("{n} bleiben unverändert", {n: keep})) : "");
+      $("renGo").disabled = !r.count;
+      $("renGo").textContent = r.count === 1 ? t("1 Datei umbenennen") : t("{n} Dateien umbenennen", {n: r.count});
+    } catch (err) { if (seq !== R.seq) return; $("renErr").textContent = err.message; $("renErr").hidden = false; $("renGo").disabled = true; $("renPrev").innerHTML = ""; $("renCount").textContent = ""; }
+  }, 250);
+}
+$("renPattern").addEventListener("input", previewRename);
+$("renSkip").addEventListener("change", () => { try { localStorage.setItem("sr-ren-skip", $("renSkip").checked ? "1" : "0"); } catch {} previewRename(); });
+$("renGo").addEventListener("click", async () => {
+  $("renGo").disabled = true;
+  try {
+    const r = await api("library/rename", { method: "POST", body: { paths: R.paths, pattern: $("renPattern").value, skip_empty: $("renSkip").checked } });
+    $("renDlg").close();
+    // umbenannte Dateien aus der Auswahl nehmen (Pfade haben sich geändert)
+    R.paths.forEach(p => L.sel.delete(p));
+    toast(t("{files} umbenannt", {files: nDat(r.done)}) + (r.errors.length ? " · " + t("Fehler: {list}", {list: r.errors.join("; ")}) : ""), r.errors.length > 0);
+    if (PL.path && R.paths.includes(PL.path)) closePlayer();
+    loadLib(true);
+  } catch (err) { $("renErr").textContent = err.message; $("renErr").hidden = false; $("renGo").disabled = false; }
+});
+async function undoRename() {
+  const u = L.data?.undo; if (!u) return;
+  if (!await ask(t("Zurücknehmen"), t("Die letzte Umbenennung ({files}) zurücknehmen?", {files: nDat(u.count)}), t("Zurücknehmen"))) return;
+  try { const r = await api("library/undo", { method: "POST" });
+    toast(t("{files} zurückbenannt", {files: nDat(r.done)}) + (r.errors.length ? " · " + t("nicht möglich: {list}", {list: r.errors.join("; ")}) : ""), r.errors.length > 0);
+    L.sel.clear(); loadLib(true); } catch (err) { toast(err.message, true); }
+}
+
+// Tags
+const T = { path: null, item: null, cover: null };
+async function openTags(path) {
+  let it;
+  try { it = await api("library/item?path=" + enc(path)); } catch (err) { toast(err.message, true); return; }
+  T.path = path; T.item = it; T.cover = null;
+  const f = $("tagForm");
+  ["title","artist","album","date","genre","comment"].forEach(k => { f[k].value = it[k] || ""; f[k].disabled = !it.editable; });
+  if (it.date) f.date.value = it.date.replace("T", " ");
+  $("tagFile").textContent = `${it.path} · ${it.ext.slice(1).toUpperCase()}${it.bitrate ? " " + it.bitrate + " kbit/s" : ""} · ${it.duration ? fmtDur(it.duration) : "–"} · ${fmtBytes(it.size)}`;
+  const b = $("tagBanner");
+  if (!it.editable) { b.hidden = false; b.textContent = t("Tags bearbeiten geht nur bei MP3-Dateien. Diese Datei kann nur gelesen werden."); }
+  else if (it.from_job && it.tag_state !== "full") {
+    b.hidden = false;
+    b.innerHTML = `<span>${t("Zu dieser Datei gibt es einen Eintrag unter „Erledigt“ ({job}). Leere Felder lassen sich daraus füllen.", {job: esc(it.from_job.title) + (it.from_job.album ? ", " + esc(it.from_job.album) : "")})}</span>
+      <button class="btn small primary" type="button" id="tagFromJob">${t("Werte aus Auftrag übernehmen")}</button>`;
+    $("tagFromJob").onclick = () => { const j = it.from_job; ["title","artist","album"].forEach(k => { if (!f[k].value && j[k]) f[k].value = j[k]; });
+      if (!f.date.value && j.date) f.date.value = j.date.replace("T", " "); toast(t("Werte übernommen – mit „Tags speichern“ schreiben")); };
+  } else b.hidden = true;
+  $("tagCover").innerHTML = it.has_cover ? `<img alt="Cover" src="api/library/cover?path=${enc(path)}&t=${Date.now()}">` : esc(t("kein Cover"));
+  $("tagCoverDel").disabled = !it.has_cover || !it.editable;
+  $("tagCoverFile").disabled = !it.editable;
+  $("tagCoverFind").disabled = !it.editable;
+  const tl = it.chapter_list?.length ? it.chapter_list : it.tracklist;
+  $("tagTracks").innerHTML = tl && tl.length ? tl.map(x => `<button type="button" data-at="${x.start}"><span class="tm">${fmtDur(x.start)}</span><span>${esc(x.title)}</span></button>`).join("")
+    : it.kind === "track" ? `<div class="none">${t("Einzeltitel haben keine eigene Titelliste.")}${it.source ? `<br>${t("Geschnitten aus: {src}", {src: esc(it.source)})}` : ""}</div>`
+    : `<div class="none">${t("Für diese Aufnahme gibt es keine Titelliste. Sie entsteht nur während der Aufnahme, wenn der Stream Titel-Infos sendet, und lässt sich nachträglich nicht erzeugen.")}</div>`;
+  $("tagTxt").hidden = !(it.tracklist && it.tracklist.length);
+  $("tagTxt").href = `api/library/tracklist?path=${enc(path)}`;
+  $("tagSave").disabled = !it.editable;
+  $("tagErr").hidden = true;
+  $("tagThenRename").checked = false;
+  $("tagDlg").showModal();
+}
+$("tagTracks").addEventListener("click", e => { const b = e.target.closest("button[data-at]"); if (!b) return; playPath(T.path, +b.dataset.at); });
+$("tagCoverFile").addEventListener("change", e => {
+  const file = e.target.files[0]; if (!file) return;
+  if (file.size > 5e6) { toast(t("Cover ist größer als 5 MB"), true); return; }
+  const r = new FileReader(); r.onload = () => { T.cover = r.result; $("tagCover").innerHTML = `<img alt="Cover" src="${r.result}">`; $("tagCoverDel").disabled = false; }; r.readAsDataURL(file);
+  e.target.value = "";
+});
+$("tagCoverFind").addEventListener("click", async () => {
+  const f = $("tagForm"), b = $("tagCoverFind"); b.disabled = true; const old = b.textContent; b.textContent = t("suche …");
+  try {
+    const r = await api("library/cover-lookup", { method: "POST", body: { artist: f.artist.value, title: f.title.value } });
+    if (r.found) { T.cover = r.data_url; $("tagCover").innerHTML = `<img alt="Cover" src="${r.data_url}">`; $("tagCoverDel").disabled = false;
+      toast(t("Cover gefunden ({src}: {info}) – mit „Tags speichern“ übernehmen", {src: r.source, info: r.info})); }
+    else toast(t("Kein passendes Cover gefunden"), true);
+  } catch (err) { toast(err.message, true); }
+  b.disabled = !T.item?.editable; b.textContent = old;
+});
+$("tagCoverDel").addEventListener("click", () => { T.cover = "remove"; $("tagCover").textContent = t("kein Cover"); $("tagCoverDel").disabled = true; });
+$("tagForm").addEventListener("submit", async e => {
+  e.preventDefault(); const f = e.target;
+  const body = { path: T.path }; ["title","artist","album","date","genre","comment"].forEach(k => body[k] = f[k].value);
+  if (T.cover) body.cover = T.cover;
+  try {
+    await api("library/tags", { method: "PUT", body });
+    $("tagDlg").close(); toast(t("Tags gespeichert"));
+    await loadLib(true);
+    if ($("tagThenRename").checked) openRename([T.path]);
+  } catch (err) { $("tagErr").textContent = err.message; $("tagErr").hidden = false; }
+});
+
+// In den Papierkorb legen
+let trashPaths = [];
+function openTrash(paths) {
+  trashPaths = paths;
+  $("trashText").textContent = paths.length === 1 ? t("Diese Datei in den Papierkorb legen?") : t("Diese {n} Dateien in den Papierkorb legen?", {n: nf.format(paths.length)});
+  $("trashList").innerHTML = paths.slice(0, 200).map(p => `<li>${esc(p)}</li>`).join("") + (paths.length > 200 ? `<li class="dimmed">${t("… und {n} weitere", {n: paths.length - 200})}</li>` : "");
+  const days = S.state?.settings.trash_days || 0;
+  $("trashHint").textContent = t("Die Dateien kommen in den Ordner deleted und lassen sich über „Papierkorb“ wiederherstellen.") + " "
+    + (days ? t("Nach {n} Tagen werden sie endgültig gelöscht.", {n: days}) : t("Sie bleiben dort, bis Du den Papierkorb leerst."));
+  $("trashDlg").showModal();
+}
+$("trashGo").addEventListener("click", async () => {
+  $("trashGo").disabled = true;
+  try {
+    if (PL.path && trashPaths.includes(PL.path)) closePlayer();
+    const r = await api("library/trash", { method: "POST", body: { paths: trashPaths } });
+    $("trashDlg").close();
+    trashPaths.forEach(p => L.sel.delete(p));
+    toast(t("{files} im Papierkorb", {files: nDat(r.done)}) + (r.dirs_removed ? " · " + (r.dirs_removed === 1 ? t("1 leerer Ordner entfernt") : t("{n} leere Ordner entfernt", {n: r.dirs_removed})) : "") + (r.errors.length ? " · " + t("Fehler: {list}", {list: r.errors.join("; ")}) : ""), r.errors.length > 0);
+    loadLib(true);
+  } catch (err) { toast(err.message, true); }
+  $("trashGo").disabled = false;
+});
+
+// Papierkorb verwalten
+const B = { items: [], sel: new Set() };
+async function openBin() {
+  B.sel.clear();
+  $("binTbl").innerHTML = `<tbody><tr><td class="empty">${t("lädt …")}</td></tr></tbody>`;
+  $("binDlg").open || $("binDlg").showModal();
+  await loadBin();
+}
+async function loadBin() {
+  try {
+    const r = await api("trash");
+    B.items = r.items; B.sel = new Set([...B.sel].filter(id => r.items.some(i => i.id === id)));
+    $("binSub").textContent = r.path;
+    $("binHint").textContent = (r.days ? t("Dateien werden {n} Tage nach dem Löschen endgültig entfernt.", {n: r.days}) : t("Automatisches Leeren ist aus (Einstellungen › Optionen)."))
+      + " " + t("Wiederherstellen legt die Datei an ihren alten Platz zurück. Ist der Name dort belegt, wird „(2)“ angehängt.");
+    setBinCount({ count: r.count, bytes: r.bytes });
+    renderBin();
+  } catch (err) { toast(err.message, true); }
+}
+function renderBin() {
+  const all = B.items.length && B.items.every(i => B.sel.has(i.id));
+  const head = `<thead><tr><th style="width:28px"><input type="checkbox" id="binAll" aria-label="${t("Alle auswählen")}" ${all ? "checked" : ""}></th><th>${t("Titel / Datei")}</th><th>${t("Art")}</th><th>${t("Gelöscht")}</th><th class="num">${t("Größe")}</th></tr></thead>`;
+  $("binTbl").innerHTML = head + "<tbody>" + (B.items.length ? B.items.map(i => `<tr data-id="${i.id}" class="${B.sel.has(i.id) ? "sel" : ""}">
+      <td><input type="checkbox" data-bsel ${B.sel.has(i.id) ? "checked" : ""} aria-label="${t("{name} auswählen", {name: esc(i.name)})}"></td>
+      <td><div class="t">${esc(i.title || i.name.replace(/\.[^.]+$/, ""))}</div><div class="sub">${esc(i.name)}</div>${i.folder ? `<div class="sub dimmed">${esc(i.folder)}</div>` : ""}</td>
+      <td>${i.kind === "track" ? `<span class="pill track">${t("Einzeltitel")}</span>` : `<span class="pill ext">${t("Aufnahme")}</span>`}</td>
+      <td class="nw">${fmtWhen(i.deleted)}</td><td class="num">${fmtBytes(i.size)}</td></tr>`).join("")
+    : `<tr><td colspan="5" class="empty">${t("Der Papierkorb ist leer.")}</td></tr>`) + "</tbody>";
+  const n = B.sel.size;
+  $("binCount").textContent = B.items.length ? (n ? t("{n} ausgewählt", {n: nf.format(n)}) : t("{files} im Papierkorb", {files: nDat(B.items.length)})) : "";
+  $("binRestore").disabled = $("binDelete").disabled = !n; $("binEmpty").disabled = !B.items.length;
+}
+$("libBin").addEventListener("click", openBin);
+$("binTbl").addEventListener("change", e => {
+  if (e.target.id === "binAll") { B.items.forEach(i => e.target.checked ? B.sel.add(i.id) : B.sel.delete(i.id)); renderBin(); return; }
+  if (e.target.matches("[data-bsel]")) { const id = +e.target.closest("tr").dataset.id; e.target.checked ? B.sel.add(id) : B.sel.delete(id); renderBin(); }
+});
+$("binRestore").addEventListener("click", async () => {
+  try { const r = await api("trash/restore", { method: "POST", body: { ids: [...B.sel] } });
+    toast(t("{files} wiederhergestellt", {files: nDat(r.done)}) + (r.errors.length ? " · " + t("Fehler: {list}", {list: r.errors.join("; ")}) : ""), r.errors.length > 0);
+    B.sel.clear(); await loadBin(); loadLib(true); } catch (err) { toast(err.message, true); }
+});
+$("binDelete").addEventListener("click", async () => {
+  const n = B.sel.size;
+  if (!await ask(t("Endgültig löschen"), t("{files} endgültig löschen? Das lässt sich nicht rückgängig machen.", {files: nDat(n)}), t("Endgültig löschen"), true)) return;
+  try { const r = await api("trash/delete", { method: "POST", body: { ids: [...B.sel] } }); toast(t("{files} endgültig gelöscht", {files: nDat(r.done)})); B.sel.clear(); loadBin(); }
+  catch (err) { toast(err.message, true); }
+});
+$("binEmpty").addEventListener("click", async () => {
+  if (!await ask(t("Papierkorb leeren"), t("Alle {files} im Papierkorb endgültig löschen? Das lässt sich nicht rückgängig machen.", {files: nDat(B.items.length)}), t("Papierkorb leeren"), true)) return;
+  try { const r = await api("trash/empty", { method: "POST" }); toast(t("{files} endgültig gelöscht", {files: nDat(r.done)})); B.sel.clear(); loadBin(); }
+  catch (err) { toast(err.message, true); }
+});
+
+// Wiedergabe
+const PL = { path: null, audio: $("plAudio"), chapters: [], title: "" };
+function fmtClock(s) { return isFinite(s) ? fmtDur(s) : "0:00"; }
+async function playPath(path, at) {
+  const a = PL.audio;
+  if (PL.path !== path) {
+    PL.path = path; PL.chapters = [];
+    const it = itemOf(path);
+    PL.title = it ? (it.title || it.name) : path.split("/").pop();
+    $("plTitle").textContent = PL.title; $("plChap").textContent = it?.album || "";
+    const hasCover = it ? it.has_cover : false;
+    $("plCover").innerHTML = hasCover ? `<img alt="" src="api/library/cover?path=${enc(path)}&v=${Math.round(it.mtime)}">` : LI.note;
+    a.src = `api/library/stream?path=${enc(path)}`;
+    api("library/item?path=" + enc(path)).then(d => { if (PL.path !== path) return; PL.chapters = d.chapter_list || []; PL.title = d.title || d.name; $("plTitle").textContent = PL.title;
+      if (d.has_cover && !hasCover) $("plCover").innerHTML = `<img alt="" src="api/library/cover?path=${enc(path)}&v=${Math.round(d.mtime)}">`; drawMarks(); updChap(); }).catch(() => {});
+  }
+  $("player").hidden = false; document.body.classList.add("has-player");
+  if (at != null) { const go = () => { a.currentTime = at; }; if (a.readyState >= 1) go(); else a.addEventListener("loadedmetadata", go, { once: true }); }
+  try { await a.play(); } catch (err) { toast(t("Wiedergabe nicht möglich: {err}", {err: err.message}), true); }
+  syncPlay();
+}
+function togglePlay(path) { if (PL.path === path && !PL.audio.paused) { PL.audio.pause(); } else if (PL.path === path) { PL.audio.play(); } else playPath(path); }
+function closePlayer() { PL.audio.pause(); PL.audio.removeAttribute("src"); PL.audio.load(); PL.path = null; $("player").hidden = true; document.body.classList.remove("has-player"); syncPlay(); }
+function syncPlay() {
+  const on = PL.path && !PL.audio.paused;
+  $("plPP").innerHTML = on ? ICON_PAUSE : ICON_PLAY; $("plPP").setAttribute("aria-label", on ? t("Pause") : t("Abspielen"));
+  document.querySelectorAll("#libTbl tr[data-path]").forEach(tr => {
+    const me = tr.dataset.path === PL.path, b = tr.querySelector("[data-play]");
+    tr.classList.toggle("playing", me); if (!b) return;
+    const pl = me && on; b.classList.toggle("on", pl); b.innerHTML = pl ? ICON_PAUSE : ICON_PLAY; b.setAttribute("aria-label", pl ? t("Pause") : t("Abspielen"));
+  });
+}
+function curChap() { const tm = PL.audio.currentTime; let k = -1; PL.chapters.forEach((c, n) => { if (c.start <= tm + 0.5) k = n; }); return k; }
+function updChap() { const k = curChap(); if (k >= 0) $("plChap").textContent = `♪ ${PL.chapters[k].title}`; }
+function drawMarks() {
+  const d = PL.audio.duration; $("plTrack").querySelectorAll("i").forEach(x => x.remove());
+  if (!isFinite(d) || !d || PL.chapters.length > 300) return;
+  PL.chapters.forEach(c => { if (c.start > 0) { const m = document.createElement("i"); m.style.left = (c.start / d * 100) + "%"; $("plTrack").appendChild(m); } });
+}
+PL.audio.addEventListener("timeupdate", () => { const a = PL.audio, d = a.duration;
+  $("plCur").textContent = fmtClock(a.currentTime); $("plDur").textContent = fmtClock(d);
+  $("plBar").style.width = (isFinite(d) && d ? a.currentTime / d * 100 : 0) + "%"; $("plTrack").setAttribute("aria-valuenow", Math.round(a.currentTime)); updChap(); });
+PL.audio.addEventListener("loadedmetadata", () => { $("plDur").textContent = fmtClock(PL.audio.duration); drawMarks(); });
+["play","pause","ended"].forEach(ev => PL.audio.addEventListener(ev, syncPlay));
+PL.audio.addEventListener("error", () => { if (PL.path) toast(t("Datei lässt sich nicht abspielen"), true); });
+$("plPP").addEventListener("click", () => PL.audio.paused ? PL.audio.play() : PL.audio.pause());
+$("plClose").addEventListener("click", closePlayer);
+$("plPrev").addEventListener("click", () => { const a = PL.audio, k = curChap();
+  if (!PL.chapters.length) { a.currentTime = Math.max(0, a.currentTime - 30); return; }
+  const c = PL.chapters[k]; a.currentTime = c && a.currentTime - c.start > 3 ? c.start : (PL.chapters[k - 1]?.start ?? 0); });
+$("plNext").addEventListener("click", () => { const a = PL.audio, k = curChap();
+  if (!PL.chapters.length) { a.currentTime = Math.min(a.duration || 0, a.currentTime + 30); return; }
+  const c = PL.chapters[k + 1]; if (c) a.currentTime = c.start; });
+function seekAt(x) { const r = $("plTrack").getBoundingClientRect(), d = PL.audio.duration; if (isFinite(d)) PL.audio.currentTime = Math.max(0, Math.min(1, (x - r.left) / r.width)) * d; }
+$("plTrack").addEventListener("click", e => seekAt(e.clientX));
+$("plTrack").addEventListener("keydown", e => { const a = PL.audio; if (e.key === "ArrowRight") { a.currentTime += 10; e.preventDefault(); } if (e.key === "ArrowLeft") { a.currentTime -= 10; e.preventDefault(); } });
+
+$("logoutBtn").addEventListener("click", async () => { try { await api("logout", { method: "POST" }); } catch {} location.href = "login"; });
+
+// ---------- Start ----------
+(async () => {
+  await refresh(); refreshHist();
+  let v = "jobs"; try { v = localStorage.getItem("sr-view") || "jobs"; } catch {}
+  show(v);
+  setInterval(refresh, 3000);
+  setInterval(() => { if (S.view === "jobs") refreshHist(); if (S.view === "log") loadLog(); }, 10000);
+})();
+</script>
+</body>
+</html>

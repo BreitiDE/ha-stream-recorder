@@ -1,0 +1,25 @@
+configuration:
+  storage_path:
+    name: Speicherordner
+    description: >-
+      Ordner für Aufnahmen (record/), Einzeltitel (title/) und den Papierkorb (deleted/).
+      Muss unter /media oder /share liegen. Standard: /media/stream-recorder. Eine
+      Netzwerkfreigabe unter Einstellungen › System › Speicher (Verwendung „Medien“)
+      erscheint unter /media.
+  username:
+    name: Benutzername (direkter Zugriff)
+    description: >-
+      Nur für den direkten Zugriff im Browser ohne Home Assistant (Port unten). Die
+      Seitenleiste von Home Assistant funktioniert ohne.
+  password:
+    name: Passwort (direkter Zugriff)
+    description: >-
+      Passwort für den direkten Zugriff. Benutzername oder Passwort leer = direkter Zugriff aus.
+  log_level:
+    name: Log-Level
+    description: >-
+      Detailgrad des App-Logs (Ansicht „Log“ in der App). Ins Home-Assistant-Log wird nichts geschrieben.
+network:
+  8765/tcp: >-
+    Direkter Zugriff im Browser mit eigenem Login (optional). Port eintragen, z. B. 8765,
+    und oben Benutzername und Passwort setzen. Leer = nur über die Seitenleiste von Home Assistant.

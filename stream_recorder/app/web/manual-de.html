@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stream-Recorder – Bedienungsanleitung</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<style>
+/* Farbsystem: FARBDESIGN.md, Akzent #ce6c00 */
+:root {
+  color-scheme: light;
+  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink-2:#52514e; --muted:#6b6a65;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10); --hover:rgba(11,11,11,.04);
+  --accent:#ce6c00; --accent-text:#a45502; --on-accent:#0b0b0b; --accent-soft:rgba(206,108,0,.12);
+  --good-bg:rgba(12,163,12,.12); --good-text:#086b08; --warn-bg:rgba(250,178,25,.18); --warn-text:#7a5200;
+  --crit-bg:rgba(208,59,59,.12); --crit-text:#a62a2a; --code-bg:rgba(11,11,11,.05);
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#9a998f;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10); --hover:rgba(255,255,255,.05);
+    --accent-text:#e09156; --accent-soft:rgba(206,108,0,.18);
+    --good-bg:rgba(12,163,12,.18); --good-text:#6fd36f; --warn-bg:rgba(250,178,25,.16); --warn-text:#f5c860;
+    --crit-bg:rgba(208,59,59,.18); --crit-text:#f08a8a; --code-bg:rgba(255,255,255,.07);
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 15px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--accent-text); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+header.top { background: var(--surface); border-bottom: 1px solid var(--border); }
+header.top .in { max-width: 1180px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 18px; }
+.brand span { color: var(--ink-2); font-weight: 500; }
+.back { margin-left: auto; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px;
+  border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink); text-decoration: none; }
+.back:hover, .lang:hover { background: var(--hover); }
+.lang { margin-left: auto; font-size: 14px; padding: 7px 12px; border-radius: 8px; color: var(--ink-2); text-decoration: none; }
+.lang + .back { margin-left: 0; }
+.layout { max-width: 1180px; margin: 0 auto; padding: 24px 20px 64px; display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start; }
+nav.toc { flex: 1 1 220px; max-width: 260px; position: sticky; top: 16px; font-size: 14px; }
+nav.toc h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; font-weight: 600; }
+nav.toc ol { list-style: none; margin: 0; padding: 0; counter-reset: t; }
+nav.toc li { counter-increment: t; }
+nav.toc a { display: block; padding: 5px 10px; border-radius: 6px; color: var(--ink-2); text-decoration: none; }
+nav.toc a::before { content: counter(t) ". "; color: var(--muted); }
+nav.toc a:hover { background: var(--hover); color: var(--ink); }
+main { flex: 999 1 560px; min-width: 0; }
+h1 { font-size: 30px; line-height: 1.2; letter-spacing: -.02em; margin: 0 0 8px; }
+.lead { color: var(--ink-2); font-size: 17px; margin: 0 0 28px; max-width: 70ch; }
+section { margin-bottom: 44px; }
+h2.sec { font-size: 22px; letter-spacing: -.01em; margin: 0 0 12px; padding-top: 8px; border-top: 1px solid var(--grid); }
+h3 { font-size: 16px; margin: 22px 0 6px; }
+p, li { max-width: 75ch; }
+ul, ol { padding-left: 22px; }
+li { margin: 3px 0; }
+code, kbd { font: 13px ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+pre { font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px; overflow-x: auto; }
+pre code { background: none; padding: 0; }
+figure { margin: 18px 0 24px; }
+figure img { display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+figure.narrow img { max-width: min(560px, 100%); }
+figcaption { color: var(--muted); font-size: 13px; margin-top: 8px; }
+.steps { counter-reset: s; list-style: none; padding: 0; }
+.steps > li { counter-increment: s; position: relative; padding-left: 40px; margin: 12px 0; }
+.steps > li::before { content: counter(s); position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.table-wrap { overflow-x: auto; margin: 12px 0 18px; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th { text-align: left; color: var(--muted); font-weight: 500; font-size: 13px; padding: 7px 10px; border-bottom: 1px solid var(--axis); }
+td { padding: 8px 10px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+td:first-child { white-space: nowrap; }
+.note { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); padding: 12px 16px; margin: 16px 0; }
+.note b:first-child { display: block; margin-bottom: 2px; }
+.note.tip { background: var(--accent-soft); border-color: transparent; }
+.note.warn { background: var(--warn-bg); border-color: transparent; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.pill.ok { background: var(--good-bg); color: var(--good-text); }
+.pill.aborted { background: var(--warn-bg); color: var(--warn-text); }
+.pill.error { background: var(--crit-bg); color: var(--crit-text); }
+.ui { font-weight: 600; }
+footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--grid); padding-top: 16px; }
+@media (max-width: 820px) { nav.toc { position: static; max-width: none; } }
+@media print {
+  header.top .back, nav.toc { display: none; }
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .layout { display: block; padding: 0; }
+  section { break-inside: auto; }
+  figure { break-inside: avoid; }
+  a { color: inherit; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="in">
+    <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#ce6c00"/><circle cx="16" cy="16" r="6" fill="none" stroke="#0b0b0b" stroke-width="2.5"/><circle cx="16" cy="16" r="2.5" fill="#0b0b0b"/></svg>Stream-Recorder <span>· Bedienungsanleitung</span></div>
+    <a class="lang" href="manual?lang=en">English</a>
+    <a class="back" href="./">← zur Oberfläche</a>
+  </div>
+</header>
+
+<div class="layout">
+<nav class="toc" aria-label="Inhalt">
+  <h2>Inhalt</h2>
+  <ol>
+    <li><a href="#ueberblick">Überblick</a></li>
+    <li><a href="#installation">Installation</a></li>
+    <li><a href="#zugriff">Öffnen und Anmelden</a></li>
+    <li><a href="#oberflaeche">Die Oberfläche</a></li>
+    <li><a href="#sender">Sender einrichten</a></li>
+    <li><a href="#auftrag">Aufnahme planen</a></li>
+    <li><a href="#sofort">Sofort aufnehmen</a></li>
+    <li><a href="#laufend">Aufträge verwalten</a></li>
+    <li><a href="#erledigt">Erledigte Aufnahmen</a></li>
+    <li><a href="#aufnahmen">Aufnahmen verwalten und schneiden</a></li>
+    <li><a href="#papierkorb">Papierkorb und leere Ordner</a></li>
+    <li><a href="#ordner">Ordner und Dateinamen</a></li>
+    <li><a href="#tags">ID3-Tags und Titelliste</a></li>
+    <li><a href="#ha">Home Assistant: Sensoren, Ereignisse, Befehle</a></li>
+    <li><a href="#log">Log</a></li>
+    <li><a href="#fehler">Fehlerbehebung</a></li>
+    <li><a href="#referenz">Kurzreferenz</a></li>
+  </ol>
+</nav>
+
+<main>
+<h1>Bedienungsanleitung</h1>
+<p class="lead">Der Stream-Recorder ist eine App für Home Assistant. Er nimmt Internetradio-Streams zu festen Zeiten auf und legt sie als MP3-Dateien im Medienordner ab. Du bedienst ihn über die Seitenleiste von Home Assistant, auf dem Rechner, Tablet oder Handy.</p>
+
+<!-- ================================================================== -->
+<section id="ueberblick">
+<h2 class="sec">1. Überblick</h2>
+<p>So läuft eine Aufnahme ab:</p>
+<ol class="steps">
+  <li><b>Sender anlegen.</b> Du speicherst die Adresse eines Streams einmal unter einem Namen, z. B. „sunshine live Lounge“.</li>
+  <li><b>Auftrag anlegen.</b> Du legst fest, wann und wie lange aufgenommen wird, optional mit Vor- und Nachlauf und Wiederholung.</li>
+  <li><b>Fertig.</b> Zur Startzeit verbindet sich der Recorder mit dem Stream und speichert ihn unverändert. Am Ende liegt die Datei unter <code>/media/stream-recorder/record</code> und das Ergebnis steht in der Liste <span class="ui">Erledigt</span>.</li>
+</ol>
+<p>Der Recorder läuft als App im Hintergrund von Home Assistant. Die Oberfläche muss dafür nicht offen sein, sie dient nur zum Planen und Nachsehen.</p>
+<div class="note tip"><b>Gut zu wissen</b>Die Aufnahme wird nicht neu kodiert. Die Datei hat also genau die Qualität des Streams, z. B. MP3 mit 192 kbit/s. Eine Stunde braucht bei 192 kbit/s rund 86 MB.</div>
+</section>
+
+<!-- ================================================================== -->
+<section id="installation">
+<h2 class="sec">2. Installation</h2>
+<p>Die App braucht Home Assistant OS oder eine Supervised-Installation, also eine Installation mit App Store (früher „Add-on Store“).</p>
+<ol class="steps">
+  <li>In Home Assistant <i>Einstellungen › Apps › App Store</i> öffnen.</li>
+  <li>Oben rechts über das Drei-Punkte-Menü <i>Repositories</i> wählen und <code>https://github.com/BreitiDE/ha-stream-recorder</code> hinzufügen.</li>
+  <li>Unten in der Liste erscheint <b>Stream Recorder</b>. Öffnen und <span class="ui">Installieren</span> klicken.</li>
+  <li>Optional unter <span class="ui">Konfiguration</span> den Speicherordner und den direkten Zugriff einrichten (siehe unten).</li>
+  <li><span class="ui">Starten</span> klicken und <span class="ui">In der Seitenleiste anzeigen</span> einschalten.</li>
+</ol>
+<h3>Konfiguration der App</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Option</th><th>Bedeutung</th></tr></thead>
+<tbody>
+<tr><td>Speicherordner</td><td>Standard <code>/media/stream-recorder</code>. Muss unter <code>/media</code> oder <code>/share</code> liegen. Darunter legt die App die Ordner <code>record</code>, <code>title</code> und <code>deleted</code> an</td></tr>
+<tr><td>Benutzername, Passwort</td><td>nur für den direkten Zugriff ohne Home Assistant. Beide leer = direkter Zugriff aus</td></tr>
+<tr><td>Log-Level</td><td>wie ausführlich die App ins eigene Log schreibt: <code>debug</code>, <code>info</code> (Standard), <code>warning</code>, <code>error</code></td></tr>
+<tr><td>Netzwerk: Port</td><td>Port für den direkten Zugriff, z. B. <code>8765</code>. Leer = nur über die Seitenleiste</td></tr>
+</tbody></table></div>
+<p>Nach einer Änderung der Konfiguration die App neu starten.</p>
+<div class="note"><b>Aufnahmen auf dem NAS</b>Unter <i>Einstellungen › System › Speicher</i> eine Netzwerkfreigabe mit der Verwendung <b>Medien</b> hinzufügen, z. B. mit dem Namen <code>nas</code>. Sie erscheint dann unter <code>/media/nas</code>. Als Speicherordner der App <code>/media/nas/stream-recorder</code> eintragen.</div>
+<p><b>Updates</b> zeigt Home Assistant wie bei jeder App an. Aufträge, Sender, Einstellungen und Aufnahmen bleiben dabei erhalten. Laufende Aufnahmen werden abgebrochen, also besser zwischen zwei Aufnahmen aktualisieren. Das Backup von Home Assistant sichert die Datenbank der App mit, die Aufnahmen im Medienordner nur, wenn Du den Medienordner ins Backup aufnimmst.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="zugriff">
+<h2 class="sec">3. Öffnen und Anmelden</h2>
+<h3>Über die Seitenleiste (empfohlen)</h3>
+<p>Klicke in der Seitenleiste von Home Assistant auf <span class="ui">Stream Recorder</span>. Eine eigene Anmeldung gibt es hier nicht, Home Assistant hat Dich schon angemeldet. Oben rechts steht Dein Name aus Home Assistant. Das funktioniert auch in der Companion-App und über Nabu Casa von unterwegs.</p>
+<h3>Direkt im Browser (optional)</h3>
+<p>Wenn Du die Oberfläche ohne Home Assistant öffnen willst, trage in der Konfiguration der App Benutzername, Passwort und einen Port ein, z. B. <code>8765</code>. Dann öffnest Du <code>http://&lt;IP-von-Home-Assistant&gt;:8765/</code> und meldest Dich an.</p>
+<figure class="narrow"><img src="manual/de/login.png" width="500" height="560" alt="Anmeldeseite mit Feldern für Benutzername und Passwort" loading="lazy">
+<figcaption>Die Anmeldeseite für den direkten Zugriff</figcaption></figure>
+<ul>
+  <li><span class="ui">Angemeldet bleiben</span> hält die Anmeldung 30 Tage. Ohne den Haken endet sie nach 12 Stunden.</li>
+  <li>Nach <b>5 Fehlversuchen</b> innerhalb von 5 Minuten ist die Anmeldung von diesem Gerät aus für 5 Minuten gesperrt.</li>
+  <li>Ändert sich Benutzername oder Passwort in der Konfiguration, sind alle bisherigen Anmeldungen ungültig.</li>
+  <li><span class="ui">Abmelden</span> oben rechts gibt es nur beim direkten Zugriff.</li>
+</ul>
+<div class="note warn"><b>Nur im Heimnetz</b>Der direkte Zugriff nutzt kein HTTPS. Gib den Port nicht im Router frei. Für unterwegs ist die Seitenleiste von Home Assistant der richtige Weg.</div>
+</section>
+
+<!-- ================================================================== -->
+<section id="oberflaeche">
+<h2 class="sec">4. Die Oberfläche</h2>
+<figure><img src="manual/de/uebersicht.png" width="1280" height="1267" alt="Hauptseite mit Menü, Aktionsknöpfen, Statistik, Liste der Aufträge und Liste der erledigten Aufnahmen" loading="lazy">
+<figcaption>Die Hauptseite: oben Menü und Aktionen, dann Statistik, Aufträge und Erledigt</figcaption></figure>
+<h3>Kopfzeile und Menü</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Element</th><th>Funktion</th></tr></thead>
+<tbody>
+<tr><td class="ui">Aufträge</td><td>Hauptseite mit Statistik, geplanten und erledigten Aufnahmen</td></tr>
+<tr><td class="ui">Aufnahmen</td><td>alle Dateien: abspielen, Tags bearbeiten, umbenennen, schneiden, löschen (<a href="#aufnahmen">Abschnitt 10</a>)</td></tr>
+<tr><td class="ui">Sender</td><td>gespeicherte Streams anlegen, testen, ändern, löschen</td></tr>
+<tr><td class="ui">Einstellungen</td><td>Sprache, Papierkorb, Dateinamen, Vor- und Nachlauf, Einzeltitel schneiden, Systeminfo</td></tr>
+<tr><td class="ui">Log</td><td>die letzten Einträge des App-Logs</td></tr>
+<tr><td class="ui">Anleitung</td><td>diese Seite. Mit <span class="ui">← zur Oberfläche</span> oben rechts geht es zurück</td></tr>
+<tr><td>Status-Punkt</td><td>grün = bereit, orange = Aufnahme läuft, rot = App nicht erreichbar</td></tr>
+<tr><td class="ui">Spenden</td><td>Gefällt Dir die App? Über eine Spende per PayPal freue ich mich</td></tr>
+</tbody></table></div>
+<h3>Aktionen und Statistik</h3>
+<ul>
+  <li><span class="ui">Neuer Auftrag</span>: Aufnahme planen (<a href="#auftrag">Abschnitt 6</a>), <span class="ui">Jetzt aufnehmen</span>: sofort starten (<a href="#sofort">Abschnitt 7</a>).</li>
+  <li>Daneben steht der Ordner, in dem die Aufnahmen landen.</li>
+</ul>
+<div class="table-wrap"><table>
+<thead><tr><th>Kachel</th><th>Bedeutung</th></tr></thead>
+<tbody>
+<tr><td>Geplant</td><td>Anzahl der wartenden Aufträge und Startzeit des nächsten (inklusive Vorlauf)</td></tr>
+<tr><td>Läuft gerade</td><td>laufende Aufnahmen und die aktuelle Datenrate zusammen</td></tr>
+<tr><td>Erfolgreich</td><td>erfolgreiche Aufnahmen der letzten 30 Tage</td></tr>
+<tr><td>Abgebrochen / Fehler</td><td>beide Zahlen für die letzten 30 Tage</td></tr>
+<tr><td>Aufgenommen</td><td>Stunden und Datenmenge der letzten 30 Tage</td></tr>
+<tr><td>Speicher frei</td><td>freier Platz im Speicherordner</td></tr>
+</tbody></table></div>
+<p>Die Seite aktualisiert sich alle 3 Sekunden von selbst.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="sender">
+<h2 class="sec">5. Sender einrichten</h2>
+<p>Ein Sender ist ein gespeicherter Stream mit Namen. Der Lounge-Stream von sunshine live ist beim ersten Start schon eingetragen.</p>
+<figure><img src="manual/de/sender.png" width="1280" height="860" alt="Seite Sender mit Liste der Sender, Formular zum Hinzufügen und Ergebnis eines Stream-Tests" loading="lazy">
+<figcaption>Senderliste, Formular und das Ergebnis von „Testen“</figcaption></figure>
+<ol class="steps">
+  <li>Menü <span class="ui">Sender</span> öffnen.</li>
+  <li>Unter <span class="ui">Sender hinzufügen</span> einen Namen und die Stream-URL eintragen.</li>
+  <li>Mit <span class="ui">Stream testen</span> prüfen, ob der Stream aufnahmefähig ist.</li>
+  <li><span class="ui">Speichern</span>.</li>
+</ol>
+<p>Als URL eignet sich die direkte Stream-Adresse oder eine Playlist-Adresse (<code>.m3u</code>, <code>.pls</code>). Playlists und Weiterleitungen löst der Recorder selbst auf. Die Adresse findest Du meist auf der Webseite des Senders unter „Streams“, „Webradio“ oder „Player“, oder in Radio-Verzeichnissen.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Testergebnis</th><th>Bedeutung</th></tr></thead>
+<tbody>
+<tr><td>Ergebnis</td><td><span class="pill ok">aufnahmefähig</span> oder <span class="pill error">nicht aufnahmefähig</span> mit Grund</td></tr>
+<tr><td>Format</td><td>Audioformat und die spätere Dateiendung. MP3 ergibt <code>.mp3</code> mit ID3-Tags, AAC ergibt <code>.aac</code></td></tr>
+<tr><td>Bitrate</td><td>Qualität laut Sender, z. B. 192 kbit/s</td></tr>
+<tr><td>Titel-Infos (ICY)</td><td>„ja“ heißt: der Stream sendet die laufenden Musiktitel mit. Daraus entsteht die Titelliste in der Datei</td></tr>
+<tr><td>Endgültige URL</td><td>die Adresse nach allen Weiterleitungen</td></tr>
+</tbody></table></div>
+<p>Bestehende Sender änderst Du mit dem Stift, löschst sie mit dem ×. Bereits geplante Aufträge behalten ihre URL.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="auftrag">
+<h2 class="sec">6. Aufnahme planen</h2>
+<p>Klicke auf <span class="ui">Neuer Auftrag</span>.</p>
+<figure class="narrow"><img src="manual/de/auftrag.png" width="760" height="460" alt="Dialog Neuer Auftrag mit Feldern für Titel, Moderation, Sender, Start, Dauer, Vorlauf, Nachlauf und Wiederholung" loading="lazy">
+<figcaption>Der Dialog „Neuer Auftrag“. Das Datum erscheint im Format Deiner Browsersprache.</figcaption></figure>
+<div class="table-wrap"><table>
+<thead><tr><th>Feld</th><th>Bedeutung</th></tr></thead>
+<tbody>
+<tr><td>Titel / Sendung</td><td>Pflicht. Landet im Dateinamen und im ID3-Titel</td></tr>
+<tr><td>Moderation</td><td>optional. Wird als Interpret in die Datei geschrieben</td></tr>
+<tr><td>Sender</td><td>einer der gespeicherten Sender. Mit <span class="ui">Andere URL …</span> trägst Du eine Adresse nur für diesen Auftrag ein</td></tr>
+<tr><td>Start, Dauer</td><td>Beginn der Sendung und Länge in Minuten (1 bis 1440)</td></tr>
+<tr><td>Vorlauf, Nachlauf</td><td>so viele Minuten vor dem Start beginnt bzw. nach dem Ende endet die Aufnahme (0–60 bzw. 0–120)</td></tr>
+<tr><td>Wiederholung</td><td>einmalig, täglich, werktags (Mo–Fr) oder wöchentlich am selben Wochentag</td></tr>
+</tbody></table></div>
+<div class="note"><b>Beispiel</b>Sendung 21:00 bis 23:00, Vorlauf 1 min, Nachlauf 3 min → Aufnahme 20:59 bis 23:03. Sender halten ihre Zeiten selten auf die Sekunde, der Puffer verhindert abgeschnittene Anfänge und Enden.</div>
+<ul>
+  <li>Die Zeiten gelten in der Zeitzone von Home Assistant, auch über die Zeitumstellung hinweg.</li>
+  <li>Aufträge dürfen sich überschneiden. Der Recorder nimmt dann mehrere Streams gleichzeitig auf.</li>
+  <li>Wiederkehrende Aufträge springen nach jeder Aufnahme auf den nächsten Termin. Einmalige verschwinden nach der Aufnahme und stehen dann unter <span class="ui">Erledigt</span>.</li>
+</ul>
+</section>
+
+<!-- ================================================================== -->
+<section id="sofort">
+<h2 class="sec">7. Sofort aufnehmen</h2>
+<p><span class="ui">Jetzt aufnehmen</span> startet eine Aufnahme ohne Planung, z. B. wenn gerade etwas Gutes läuft. Das geht auch aus einer Automation heraus (<a href="#ha">Abschnitt 14</a>).</p>
+<figure class="narrow"><img src="manual/de/jetzt.png" width="760" height="304" alt="Dialog Jetzt aufnehmen mit Sender, Titel und Dauer" loading="lazy">
+<figcaption>Sender wählen, Titel und Dauer eintragen, starten</figcaption></figure>
+<p>Die Aufnahme beginnt innerhalb einer Sekunde und erscheint oben in der Auftragsliste. Willst Du früher aufhören, brich sie einfach ab. Die bis dahin aufgenommene Datei bleibt erhalten.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="laufend">
+<h2 class="sec">8. Aufträge verwalten</h2>
+<figure><img src="manual/de/kopf.png" width="1280" height="250" alt="Kopfbereich der Hauptseite" loading="lazy">
+<figcaption>Läuft eine Aufnahme, zeigt der Status-Punkt oben rechts orange</figcaption></figure>
+<div class="table-wrap"><table>
+<thead><tr><th>Anzeige / Knopf</th><th>Bedeutung</th></tr></thead>
+<tbody>
+<tr><td>Geplant · in 2 h</td><td>wartet auf die Startzeit</td></tr>
+<tr><td>Nimmt auf · 23:04 / 1:00:00</td><td>läuft. Darunter Fortschrittsbalken, Dateigröße, Datenrate und, falls gesendet, der aktuelle Musiktitel (♪)</td></tr>
+<tr><td>„2× neu verbunden“</td><td>der Stream war kurz weg, die Aufnahme läuft in derselben Datei weiter</td></tr>
+<tr><td>Stift / ×</td><td>Auftrag bearbeiten (nur solange er nicht läuft) / löschen</td></tr>
+<tr><td>Quadrat</td><td>laufende Aufnahme abbrechen. Die Datei bis hierhin bleibt, der Eintrag erscheint als <span class="pill aborted">Abgebrochen</span></td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ================================================================== -->
+<section id="erledigt">
+<h2 class="sec">9. Erledigte Aufnahmen</h2>
+<p>Die Liste <span class="ui">Erledigt</span> zeigt jede beendete Aufnahme, die neueste zuerst. Mit den Knöpfen rechts oben filterst Du nach Status.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Status</th><th>Wann</th></tr></thead>
+<tbody>
+<tr><td><span class="pill ok">Erfolgreich</span></td><td>Mindestens 97 % der geplanten Zeit sind in der Datei</td></tr>
+<tr><td><span class="pill aborted">Abgebrochen</span></td><td>von Hand oder per Automation gestoppt, oder die App wurde während der Aufnahme beendet (Neustart, Update)</td></tr>
+<tr><td><span class="pill error">Fehler</span></td><td>keine Daten (z. B. „HTTP 404“), zu kurz („unvollständig: 41 von 64 min“) oder „verpasst“, weil App oder Home Assistant zur Startzeit nicht liefen</td></tr>
+</tbody></table></div>
+<ul>
+  <li>Mit dem Pfeil lädst Du die Datei direkt herunter.</li>
+  <li>Mit × entfernst Du nur den Eintrag aus der Liste. <b>Die Datei bleibt.</b> Einträge älter als 90 Tage verschwinden automatisch.</li>
+</ul>
+</section>
+
+<!-- ================================================================== -->
+<section id="aufnahmen">
+<h2 class="sec">10. Aufnahmen verwalten und schneiden</h2>
+<p>Unter <span class="ui">Aufnahmen</span> siehst Du alle Audiodateien aus <code>record</code> (Aufnahmen) und <code>title</code> (Einzeltitel), auch in Unterordnern und auch Dateien, die Du selbst hineinkopiert hast.</p>
+<figure><img src="manual/de/aufnahmen.png" width="1280" height="1020" alt="Seite Aufnahmen mit Kennzahlen, Filter, Auswahlleiste, Liste der Dateien und Wiedergabeleiste" loading="lazy">
+<figcaption>Zwei Dateien ausgewählt, unten läuft die Wiedergabe</figcaption></figure>
+<h3>Liste, Suche und Seiten</h3>
+<ul>
+  <li><b>Suche</b> findet Wörter in Titel, Interpret, Album, Dateiname, Ordner und in der Titelliste, z. B. die Sendung, in der ein bestimmter Song lief.</li>
+  <li><span class="ui">Alle</span> / <span class="ui">Aufnahmen</span> / <span class="ui">Einzeltitel</span>, <b>Sender / Album</b> und <span class="ui">Tags vollständig</span> / <span class="ui">Tags fehlen</span> grenzen die Liste ein.</li>
+  <li>Ein Klick auf eine <b>Spaltenüberschrift</b> sortiert, ein zweiter dreht die Reihenfolge um. Unten wählst Du 10, 25, 50, 100 oder alle pro Seite.</li>
+  <li><span class="ui">Neu einlesen</span> liest die Ordner sofort neu ein, sonst geschieht das beim Öffnen der Seite.</li>
+  <li><b>Status:</b> Ergebnis aus „Erledigt“, <b>Einzeltitel</b> mit Quelle, oder <b>Extern</b> für Dateien, die nicht vom Recorder stammen.</li>
+</ul>
+<h3>Abspielen</h3>
+<p>Der runde Knopf in jeder Zeile spielt die Datei im Browser ab. In der Wiedergabeleiste markieren kleine Striche die Kapitel, ⏮ und ⏭ springen zum vorherigen bzw. nächsten Titel (ohne Kapitel 30 Sekunden). Die Wiedergabe läuft weiter, wenn Du im Menü wechselst.</p>
+<h3>Mehrere Dateien auf einmal</h3>
+<p>Setze Haken vor die Dateien, der Haken im Tabellenkopf wählt die ganze Seite, <span class="ui">Alle … Treffer auswählen</span> alles zum Filter Passende. Die Auswahlleiste bietet <span class="ui">Nach Tags umbenennen …</span>, <span class="ui">Titel schneiden …</span>, <span class="ui">Tags bearbeiten</span> (eine Datei), <span class="ui">Tags aus Auftrag ergänzen</span>, <span class="ui">Cover suchen</span>, <span class="ui">Herunterladen</span> und <span class="ui">In den Papierkorb</span>.</p>
+<h3>Nach Tags umbenennen</h3>
+<figure class="narrow"><img src="manual/de/umbenennen.png" width="940" height="524" alt="Dialog Umbenennen mit Muster, Platzhaltern und Vorschau alt und neu" loading="lazy">
+<figcaption>Die Vorschau zeigt vor dem Umbenennen genau, was passiert</figcaption></figure>
+<ul>
+  <li>Platzhalter: <code>{titel}</code> <code>{interpret}</code> <code>{album}</code> <code>{genre}</code> <code>{datum}</code> <code>{zeit}</code> <code>{jahr}</code> <code>{monat}</code> <code>{tag}</code> <code>{wochentag}</code> <code>{dateiname}</code>. Die englischen Namen (<code>{title}</code>, <code>{artist}</code> …) gehen auch.</li>
+  <li>Nur der Dateiname ändert sich, die Datei bleibt in ihrem Ordner. Es wird nie überschrieben, bei gleichem Namen kommt „(2)“ dazu.</li>
+  <li>Die letzte Umbenennung lässt sich mit <span class="ui">Zurücknehmen</span> rückgängig machen, auch nach einem Neustart.</li>
+</ul>
+<h3>Tags bearbeiten</h3>
+<figure><img src="manual/de/tags.png" width="940" height="718" alt="Dialog Tags bearbeiten mit Feldern, Cover und Titelliste" loading="lazy">
+<figcaption>Links die Tags, rechts die Titelliste. Ein Klick auf einen Titel spielt ab dieser Stelle.</figcaption></figure>
+<ul>
+  <li>Titel, Interpret, Album, Datum (<code>JJJJ-MM-TT HH:MM</code>), Genre, Kommentar und Cover (JPG/PNG bis 5 MB) lassen sich ändern. Bearbeiten geht nur bei MP3.</li>
+  <li><span class="ui">Werte aus Auftrag übernehmen</span> füllt leere Felder aus dem Eintrag unter „Erledigt“.</li>
+  <li>Die Titelliste lässt sich als .txt herunterladen.</li>
+</ul>
+<h3>In Einzeltitel schneiden</h3>
+<p>Eine Aufnahme mit Titelliste lässt sich in einzelne Songs zerlegen. Jeder Song wird eine eigene MP3-Datei unter <code>title</code> mit eigenen Tags. Die Aufnahme selbst bleibt unverändert.</p>
+<figure class="narrow"><img src="manual/de/schneiden.png" width="940" height="738" alt="Dialog Aufnahme in Einzeltitel schneiden mit Liste der erkannten Titel, Haken und Hinweisen" loading="lazy">
+<figcaption>Die Vorschau zeigt jeden erkannten Titel mit Zeit, Länge und ob er geschnitten wird</figcaption></figure>
+<ol class="steps">
+  <li>In der Zeile der Aufnahme auf die <b>Schere</b> klicken, für mehrere Aufnahmen auswählen und <span class="ui">Titel schneiden …</span>.</li>
+  <li>Die Liste prüfen. Mit ▶ hörst Du die Aufnahme ab der Schnittstelle, mit den Haken wählst Du Titel ab oder aus.</li>
+  <li><span class="ui">… Titel schneiden</span> klicken.</li>
+</ol>
+<ul>
+  <li><b>Automatisch abgewählt</b> sind erster und letzter Titel (meist angeschnitten), Senderkennungen und Stücke unter der Mindestlänge.</li>
+  <li><b>Verlustfrei</b>, ohne Neukodierung und ohne Ein-/Ausblenden.</li>
+  <li><b>Tags:</b> Interpret und Titel aus der Titelliste, Album = Sender, Titelnummer, Datum und Uhrzeit, Genre, Cover.</li>
+</ul>
+<div class="note"><b>Wenn die Schnitte nicht genau sitzen</b>Sender melden Titelwechsel oft einige Sekunden zu früh oder zu spät. Beginnt der Song zu spät, stell die <b>Verschiebung</b> auf einen positiven Wert (z. B. 5 = alle Schnitte 5 Sekunden später), beginnt er zu früh, auf einen negativen. Den passenden Wert trägst Du unter <span class="ui">Einstellungen</span> als Standard ein.</div>
+<figure><img src="manual/de/einstellungen-schnitt.png" width="1240" height="498" alt="Einstellungen für das Schneiden: Ordner, Muster, Mindestlänge, Verschiebung, Cover-Suche" loading="lazy">
+<figcaption>Einstellungen › Einzeltitel schneiden</figcaption></figure>
+<h3>Cover</h3>
+<p>Radio-Streams enthalten keine Cover-Bilder, nur Interpret und Titel. Der Recorder sucht deshalb online, zuerst bei <b>Deezer</b>, dann bei <b>Apple iTunes</b>.</p>
+<figure><img src="manual/de/einzeltitel.png" width="1280" height="560" alt="Seite Aufnahmen mit Filter Einzeltitel und Vorschaubildern der Cover" loading="lazy">
+<figcaption>Filter „Einzeltitel“: vorn das Cover, ohne Cover ein Noten-Symbol</figcaption></figure>
+<ul>
+  <li>Beim Schneiden automatisch, solange „Song-Cover beim Schneiden online suchen“ an ist. Nachträglich mit <span class="ui">Cover suchen</span> oder im Tag-Dialog.</li>
+  <li><b>Lieber keins als ein falsches:</b> Ein Treffer wird nur übernommen, wenn Interpret und Titel gut übereinstimmen. Ohne Treffer bekommt der Titel das Cover der Aufnahme, falls sie eins hat.</li>
+</ul>
+<div class="note"><b>Datenschutz</b>Für die Suche gehen Interpret und Titel an Deezer bzw. Apple, sonst nichts. Wer das nicht möchte, schaltet die Suche unter Einstellungen aus.</div>
+</section>
+
+<!-- ================================================================== -->
+<section id="papierkorb">
+<h2 class="sec">11. Papierkorb und leere Ordner</h2>
+<p><span class="ui">In den Papierkorb</span> (in der Zeile oder in der Auswahlleiste) verschiebt Dateien nach <code>/media/stream-recorder/deleted</code>. Die Unterordner bleiben dabei erhalten, z. B. <code>deleted/record/sunshine live Lounge/2026-10/…</code>. So weiß der Recorder, wohin die Datei zurückgehört.</p>
+<figure><img src="manual/de/papierkorb.png" width="940" height="404" alt="Dialog Papierkorb mit Liste der gelöschten Dateien und Knöpfen Wiederherstellen, Endgültig löschen, Papierkorb leeren" loading="lazy">
+<figcaption>Der Papierkorb: auswählen und wiederherstellen oder endgültig löschen</figcaption></figure>
+<ul>
+  <li>Der Knopf <span class="ui">Papierkorb</span> oben auf der Seite Aufnahmen zeigt Anzahl und Größe und öffnet die Liste.</li>
+  <li><span class="ui">Wiederherstellen</span> legt die Dateien an ihren alten Platz zurück. Ist der Name dort inzwischen belegt, kommt „(2)“ dazu.</li>
+  <li><span class="ui">Endgültig löschen</span> und <span class="ui">Papierkorb leeren</span> löschen wirklich. Das lässt sich nicht rückgängig machen.</li>
+  <li><b>Automatisch leeren:</b> Unter <span class="ui">Einstellungen › Optionen</span> „Papierkorb automatisch leeren nach (Tagen)“ setzen, z. B. 30. Dateien, die länger im Papierkorb liegen, werden dann endgültig gelöscht. 0 = nie (Standard).</li>
+  <li>Dateien, die Du selbst in den Ordner <code>deleted</code> legst, erscheinen ebenfalls im Papierkorb.</li>
+</ul>
+<h3>Leere Ordner</h3>
+<ul>
+  <li><b>Automatisch:</b> Ist unter <span class="ui">Einstellungen › Optionen</span> „Leer gewordene Ordner nach dem Löschen automatisch entfernen“ an (Standard), entfernt der Recorder nach „In den Papierkorb“ die dadurch leer gewordenen Ordner, auch mehrere Ebenen nach oben.</li>
+  <li><b>Von Hand:</b> <span class="ui">Leere Ordner entfernen</span> oben auf der Seite Aufnahmen sucht alle leeren Ordner, zeigt sie an und entfernt sie nach Bestätigung.</li>
+</ul>
+<div class="note"><b>Was als leer gilt</b>Ein Ordner ohne Dateien und ohne Unterordner mit Inhalt. Systemdateien wie <code>.DS_Store</code>, <code>._…</code> oder <code>Thumbs.db</code> zählen nicht. Die Hauptordner <code>record</code>, <code>title</code> und <code>deleted</code> und versteckte Ordner werden nie entfernt.</div>
+<figure><img src="manual/de/einstellungen.png" width="1280" height="1691" alt="Einstellungen mit Optionen, Aufnahmen, Einzeltitel schneiden und System" loading="lazy">
+<figcaption>Einstellungen: Optionen ganz oben, darunter Aufnahmen, Einzeltitel schneiden und System</figcaption></figure>
+</section>
+
+<!-- ================================================================== -->
+<section id="ordner">
+<h2 class="sec">12. Ordner und Dateinamen</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Ordner</th><th>Inhalt</th></tr></thead>
+<tbody>
+<tr><td><code>/media/stream-recorder/record</code></td><td>Aufnahmen</td></tr>
+<tr><td><code>/media/stream-recorder/title</code></td><td>geschnittene Einzeltitel</td></tr>
+<tr><td><code>/media/stream-recorder/deleted</code></td><td>Papierkorb</td></tr>
+</tbody></table></div>
+<p>Den Speicherordner änderst Du in der Konfiguration der App (<a href="#installation">Abschnitt 2</a>). Weil die Dateien unter <code>/media</code> liegen, findest Du sie auch im <b>Medienbrowser</b> von Home Assistant und kannst sie dort abspielen.</p>
+<p>Unter <span class="ui">Einstellungen › Aufnahmen</span> legst Du Unterordner und Dateinamen mit Platzhaltern fest:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Platzhalter</th><th>wird zu</th></tr></thead>
+<tbody>
+<tr><td><code>{sender}</code></td><td>Name des Senders, z. B. „sunshine live Lounge“</td></tr>
+<tr><td><code>{titel}</code> <code>{moderation}</code></td><td>Titel und Moderation des Auftrags</td></tr>
+<tr><td><code>{datum}</code> <code>{zeit}</code></td><td>2026-10-24, 2100 (Startzeit der Sendung)</td></tr>
+<tr><td><code>{jahr}</code> <code>{monat}</code> <code>{tag}</code> <code>{wochentag}</code></td><td>2026, 10, 24, Samstag</td></tr>
+</tbody></table></div>
+<p>Standard ist <code>{sender}/{jahr}-{monat}</code> und <code>{datum}_{zeit}_{titel}</code>, also zum Beispiel:</p>
+<pre><code>/media/stream-recorder/record/sunshine live Lounge/2026-10/2026-10-24_2100_Deep House Session.mp3</code></pre>
+<p>Nicht erlaubte Zeichen (<code>/ : ? * " &lt; &gt; |</code>) werden zum Bindestrich. Gibt es die Datei schon, kommt „(2)“ dazu. Während der Aufnahme heißt die Datei <code>….mp3.part</code>.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="tags">
+<h2 class="sec">13. ID3-Tags und Titelliste</h2>
+<p>Nach jeder MP3-Aufnahme schreibt der Recorder Titel (Auftrag), Interpret (Moderation oder Sendername), Album (Sender), Datum, Genre und, wenn der Stream Titel-Infos sendet, die <b>Titelliste</b> als Kommentar und ein <b>Kapitel</b> je Musiktitel in die Datei. Podcast-Apps springen mit den Kapiteln direkt zu einem Titel.</p>
+<p>Titelliste und Kapitel gibt es nur, wenn der Stream Titel-Infos sendet (im Sender-Test „Titel-Infos (ICY): ja“).</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="ha">
+<h2 class="sec">14. Home Assistant: Sensoren, Ereignisse, Befehle</h2>
+<h3>Sensoren</h3>
+<p>Die App legt diese Entitäten in Home Assistant an und hält sie aktuell:</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Entität</th><th>Inhalt</th></tr></thead>
+<tbody>
+<tr><td><code>binary_sensor.stream_recorder_recording</code></td><td><code>on</code>, solange aufgenommen wird. Attribute: Anzahl, Titel, Sender, aktueller Musiktitel, Datenrate, Ende</td></tr>
+<tr><td><code>sensor.stream_recorder_next_recording</code></td><td>Startzeit der nächsten Aufnahme (Zeitstempel). Attribute: Titel, Sender, Dauer, Wiederholung</td></tr>
+<tr><td><code>sensor.stream_recorder_last_recording</code></td><td>Status der letzten Aufnahme: <code>ok</code>, <code>aborted</code> oder <code>error</code>. Attribute: Titel, Sender, Meldung, Datei, Start, Ende, Dauer</td></tr>
+<tr><td><code>sensor.stream_recorder_planned</code></td><td>Anzahl geplanter Aufträge, Attribut <code>next</code> mit den nächsten fünf</td></tr>
+<tr><td><code>sensor.stream_recorder_disk_free</code></td><td>freier Speicher in GB</td></tr>
+</tbody></table></div>
+<p>Die Entitäten gehören zu keinem Gerät und lassen sich nicht in der Oberfläche umbenennen. Nach einem Neustart von Home Assistant legt die App sie innerhalb von 10 Minuten wieder an.</p>
+<h3>Ereignisse</h3>
+<p>Nach jeder Aufnahme feuert die App das Ereignis <code>stream_recorder_finished</code>, bei Fehlern zusätzlich <code>stream_recorder_error</code>. Die Daten: <code>title</code>, <code>sender</code>, <code>status</code>, <code>message</code>, <code>file</code>, <code>duration_s</code>, <code>started</code>, <code>ended</code>.</p>
+<p>Beispiel: Benachrichtigung bei einem Fehler:</p>
+<pre><code>alias: "Stream-Recorder: Fehler melden"
+triggers:
+  - trigger: event
+    event_type: stream_recorder_error
+actions:
+  - action: notify.notify
+    data:
+      title: "Aufnahme fehlgeschlagen"
+      message: "{{ trigger.event.data.title }}: {{ trigger.event.data.message }}"</code></pre>
+<h3>Befehle: Aufnahme starten und stoppen</h3>
+<p>Mit der Aktion <code>hassio.app_stdin</code> starten oder stoppen Automationen und Skripte eine Aufnahme:</p>
+<pre><code># Sofort aufnehmen (Sender wie unter „Sender“ benannt, Dauer in Minuten)
+action: hassio.app_stdin
+data:
+  app: f91e2bd5_stream_recorder
+  input:
+    action: record
+    sender: sunshine live Lounge
+    duration: 60
+    title: Aufnahme per Automation
+
+# Laufende Aufnahme(n) stoppen – ohne title alle
+action: hassio.app_stdin
+data:
+  app: f91e2bd5_stream_recorder
+  input:
+    action: stop
+    title: Aufnahme per Automation</code></pre>
+<ul>
+  <li>Statt <code>sender</code> geht auch <code>url</code> mit einer Stream-Adresse. Ohne beides nimmt die App den ersten Sender der Liste.</li>
+  <li>Den genauen Namen der App (<code>app:</code>) siehst Du in der Adresszeile, wenn Du die App unter <i>Einstellungen › Apps</i> öffnest. Er beginnt mit einer Kennung des Repositorys, z. B. <code>f91e2bd5_stream_recorder</code>.</li>
+  <li>Abgelehnte Befehle (z. B. unbekannter Sender) stehen im Log der App.</li>
+</ul>
+</section>
+
+<!-- ================================================================== -->
+<section id="log">
+<h2 class="sec">15. Log</h2>
+<figure><img src="manual/de/log.png" width="1280" height="520" alt="Log-Ansicht mit Zeitstempeln und Meldungen" loading="lazy">
+<figcaption>Das Log der App</figcaption></figure>
+<p>Das Menü <span class="ui">Log</span> zeigt die letzten 400 Zeilen. Warnungen erscheinen gelb, Fehler rot. <span class="ui">Log leeren</span> löscht die Einträge. Die App schreibt bewusst nur in ihr eigenes Log (Datei <code>/data/log/stream-recorder.log</code> im App-Container) und nicht ins Log von Home Assistant. Wie ausführlich, stellst Du in der Konfiguration der App ein. Ab 5 MB beginnt eine neue Datei, drei alte bleiben erhalten.</p>
+</section>
+
+<!-- ================================================================== -->
+<section id="fehler">
+<h2 class="sec">16. Fehlerbehebung</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Problem</th><th>Ursache und Lösung</th></tr></thead>
+<tbody>
+<tr><td>Seitenleiste zeigt einen Fehler</td><td>Die App läuft nicht. Unter <i>Einstellungen › Apps › Stream Recorder</i> starten und „Beim Booten starten“ einschalten</td></tr>
+<tr><td>Direkter Zugriff: „nicht eingerichtet“</td><td>Benutzername oder Passwort fehlen in der Konfiguration der App</td></tr>
+<tr><td>Direkter Zugriff: Seite lädt nicht</td><td>Unter <i>Netzwerk</i> in der Konfiguration ist kein Port eingetragen</td></tr>
+<tr><td>Stream-Test: HTTP 404 / 403</td><td>Adresse falsch oder veraltet. Aktuelle Stream-URL auf der Webseite des Senders suchen</td></tr>
+<tr><td>„Antwort ist eine Webseite“</td><td>Die URL führt zur Player-Seite. Die direkte Stream- oder <code>.m3u</code>-Adresse verwenden</td></tr>
+<tr><td>„HLS-Streams werden nicht unterstützt“</td><td>Der Sender bietet nur HLS (<code>.m3u8</code>). Nach einer MP3- oder AAC-Adresse suchen</td></tr>
+<tr><td>Fehler „verpasst“</td><td>App oder Home Assistant liefen zur Startzeit nicht (Neustart, Update, Stromausfall)</td></tr>
+<tr><td>„unvollständig“ mit vielen Unterbrechungen</td><td>Internet oder Sender instabil. Die Datei enthält alles, was ankam</td></tr>
+<tr><td>„Speicherordner ist nicht erreichbar“</td><td>Netzwerkfreigabe nicht eingebunden oder falscher Speicherordner in der Konfiguration</td></tr>
+<tr><td>Keine Titelliste in der Datei</td><td>Der Stream sendet keine Titel-Infos (Sender-Test: „ICY: nein“)</td></tr>
+<tr><td>Schere ist ausgegraut</td><td>Keine Titelliste, keine MP3 oder schon ein Einzeltitel. Der Tooltip nennt den Grund</td></tr>
+<tr><td>Sensoren fehlen in Home Assistant</td><td>Systeminfo unter <span class="ui">Einstellungen</span> zeigt, ob die Verbindung steht. Nach einem Neustart von HA bis zu 10 Minuten warten</td></tr>
+<tr><td>Speicher läuft voll</td><td>Alte Dateien in den Papierkorb legen und den Papierkorb leeren oder automatisch leeren lassen</td></tr>
+</tbody></table></div>
+</section>
+
+<!-- ================================================================== -->
+<section id="referenz">
+<h2 class="sec">17. Kurzreferenz</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Was</th><th>Wo</th></tr></thead>
+<tbody>
+<tr><td>Oberfläche</td><td>Seitenleiste von Home Assistant, optional <code>http://&lt;IP&gt;:&lt;Port&gt;/</code></td></tr>
+<tr><td>Konfiguration</td><td><i>Einstellungen › Apps › Stream Recorder › Konfiguration</i></td></tr>
+<tr><td>Aufnahmen / Einzeltitel / Papierkorb</td><td><code>/media/stream-recorder/record</code>, <code>…/title</code>, <code>…/deleted</code></td></tr>
+<tr><td>Datenbank, Log</td><td>im Datenordner der App (<code>/data</code>), im Backup von Home Assistant enthalten</td></tr>
+<tr><td>Quellcode, Fehler melden</td><td><a href="https://github.com/BreitiDE/ha-stream-recorder">github.com/BreitiDE/ha-stream-recorder</a></td></tr>
+</tbody></table></div>
+</section>
+
+<footer>Stream-Recorder 2.0.0 · Bedienungsanleitung · <a href="https://paypal.me/breitide">Spenden über PayPal</a></footer>
+</main>
+</div>
+</body>
+</html>
