@@ -84,8 +84,8 @@ def translate_html(html: str, pairs: dict[str, str]) -> str:
 
 
 LOGIN_EN = {
-    "Stream-Recorder – Anmeldung": "Stream Recorder – Sign in",
-    "Stream-Recorder": "Stream Recorder",
+    "Stream Recorder – Anmeldung": "Stream Recorder – Sign in",
+    "Stream Recorder": "Stream Recorder",
     "Bitte anmelden": "Please sign in",
     "Benutzername": "Username",
     ">Passwort<": ">Password<",
@@ -155,11 +155,11 @@ EN: dict[str, str] = {
     'Sprache ungültig': 'Invalid language',
     'Startzeit, Dauer oder Vor-/Nachlauf ungültig': 'Start time, duration or pre-/post-roll invalid',
     'Stream vom Server beendet': 'Stream ended by the server',
-    'Stream-Recorder Aufnahme läuft': 'Stream Recorder recording',
-    'Stream-Recorder Speicher frei': 'Stream Recorder free storage',
-    'Stream-Recorder geplante Aufträge': 'Stream Recorder planned jobs',
-    'Stream-Recorder letzte Aufnahme': 'Stream Recorder last recording',
-    'Stream-Recorder nächste Aufnahme': 'Stream Recorder next recording',
+    'Stream Recorder Aufnahme läuft': 'Stream Recorder recording',
+    'Stream Recorder Speicher frei': 'Stream Recorder free storage',
+    'Stream Recorder geplante Aufträge': 'Stream Recorder planned jobs',
+    'Stream Recorder letzte Aufnahme': 'Stream Recorder last recording',
+    'Stream Recorder nächste Aufnahme': 'Stream Recorder next recording',
     'Stream-Tags übernommen': 'stream tags kept',
     'Stream-URL muss mit http:// oder https:// beginnen': 'Stream URL must start with http:// or https://',
     'Tage für den Papierkorb ungültig': 'Invalid number of days for the trash',

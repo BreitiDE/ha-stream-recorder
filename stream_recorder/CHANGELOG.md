@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.0.2 – 2026-10-30
+
+- **Geändert:** Die Kopfzeile mit Logo, Menü, Status, Benutzer und „Unterstützen“ bleibt
+  beim Scrollen oben stehen. Auf dem Handy bricht sie um und ist etwas kompakter.
+- **Geändert:** Der Name der App lautet überall „Stream Recorder“ (ohne Bindestrich), auch
+  in Browser-Tab, Anmeldeseite, Anleitung und den Sensornamen in Home Assistant.
+- **Geändert:** Statt „angemeldet als“ steht ein Personen-Icon vor dem Namen. Beim
+  Überfahren mit der Maus erscheint „angemeldet als …“.
+- **Behoben:** Auf dem Handy war das Formular auf der Seite Sender breiter als der
+  Bildschirm. Das Dank-Overlay von „Unterstützen“ ragte über den Rand und wird auf dem
+  Handy jetzt ausgeblendet (Tippen öffnet direkt PayPal).
+
 ## 2.0.1 – 2026-10-29
 
 - **Geändert:** Der Knopf oben rechts in der Menüzeile heißt jetzt **„Unterstützen“**

@@ -49,7 +49,7 @@ import i18n  # noqa: E402
 import library as lib  # noqa: E402
 from i18n import _  # noqa: E402
 
-__version__ = "2.0.1"
+__version__ = "2.0.2"
 BASE = Path(__file__).resolve().parent
 WEB = BASE / "web"
 log = logging.getLogger("stream-recorder")
@@ -1010,29 +1010,29 @@ def ha_states() -> dict[str, tuple[str, dict]]:
     icon = "mdi:radio"
     out = {
         "binary_sensor.stream_recorder_recording": ("on" if recs else "off", {
-            "friendly_name": _("Stream-Recorder Aufnahme läuft"), "icon": "mdi:record-rec",
+            "friendly_name": _("Stream Recorder Aufnahme läuft"), "icon": "mdi:record-rec",
             "count": len(recs), "titles": [r.job["title"] for r in recs],
             "senders": [r.job.get("sender") for r in recs],
             "current_track": recs[0].tracks[-1][1] if recs and recs[0].tracks else None,
             "kbps": round(sum(r.kbps for r in recs)),
             "ends": iso(max(r.w_end for r in recs)) if recs else None}),
         "sensor.stream_recorder_next_recording": (iso(window(nxt)[0]) if nxt else "unknown", {
-            "friendly_name": _("Stream-Recorder nächste Aufnahme"), "device_class": "timestamp", "icon": icon,
+            "friendly_name": _("Stream Recorder nächste Aufnahme"), "device_class": "timestamp", "icon": icon,
             "title": nxt["title"] if nxt else None, "sender": nxt["sender"] if nxt else None,
             "start": iso(nxt["start"]) if nxt else None, "duration_min": nxt["duration_min"] if nxt else None,
             "repeat": nxt["repeat"] if nxt else None}),
         "sensor.stream_recorder_last_recording": (last["status"] if last else "unknown", {
-            "friendly_name": _("Stream-Recorder letzte Aufnahme"), "icon": icon,
+            "friendly_name": _("Stream Recorder letzte Aufnahme"), "icon": icon,
             "title": last["title"] if last else None, "sender": last["sender"] if last else None,
             "message": last["message"] if last else None, "file": last["path"] if last else None,
             "started": iso(last["started"]) if last else None, "ended": iso(last["ended"]) if last else None,
             "duration_min": round((last["duration_s"] or 0) / 60, 1) if last else None}),
         "sensor.stream_recorder_planned": (str(len(jobs)), {
-            "friendly_name": _("Stream-Recorder geplante Aufträge"), "icon": "mdi:calendar-clock",
+            "friendly_name": _("Stream Recorder geplante Aufträge"), "icon": "mdi:calendar-clock",
             "unit_of_measurement": _("Aufträge"), "state_class": "measurement",
             "next": [{"title": j["title"], "start": iso(j["start"]), "sender": j["sender"]} for j in upcoming[:5]]}),
         "sensor.stream_recorder_disk_free": (f"{free / 1e9:.1f}" if free is not None else "unknown", {
-            "friendly_name": _("Stream-Recorder Speicher frei"), "icon": "mdi:harddisk",
+            "friendly_name": _("Stream Recorder Speicher frei"), "icon": "mdi:harddisk",
             "unit_of_measurement": "GB", "device_class": "data_size", "state_class": "measurement",
             "path": str(storage())}),
     }

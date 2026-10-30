@@ -1,7 +1,7 @@
 // English texts for the web interface. Key = German source text in index.html.
 // Missing keys simply stay German, so the page never breaks.
 window.SR_EN = {
-  "Stream-Recorder": "Stream Recorder",
+  "Stream Recorder": "Stream Recorder",
   "nicht angemeldet": "not signed in",
   "OK": "OK",
   "gleich": "now",

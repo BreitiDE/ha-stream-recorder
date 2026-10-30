@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stream-Recorder</title>
+<title>Stream Recorder</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
 /* Farbsystem: FARBDESIGN.md, Akzent #ce6c00 (hell und dunkel gleich) */
@@ -34,7 +34,7 @@ a { color: var(--accent-text); }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 svg.i { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 .wrap { max-width: 1280px; margin: 0 auto; padding: 0 20px; }
-header { background: var(--surface); border-bottom: 1px solid var(--border); }
+header { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
 header .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px; padding-top: 10px; padding-bottom: 10px; }
 .brand { display: flex; align-items: center; gap: 10px; font-weight: 650; font-size: 18px; }
 nav { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -44,6 +44,10 @@ nav button:hover:not([aria-current]) { background: var(--hover); }
 nav .navlink { color: var(--ink-2); padding: 8px 12px; border-radius: 8px; text-decoration: none; }
 nav .navlink:hover { background: var(--hover); }
 .who { margin-left: auto; display: flex; align-items: center; gap: 14px; color: var(--ink-2); font-size: 13px; flex-wrap: wrap; }
+.who .user { display: inline-flex; align-items: center; gap: 5px; }
+.who .user svg { width: 16px; height: 16px; color: var(--muted); }
+.who .user b { color: var(--ink); font-weight: 600; }
+.sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
 .dot.ok { background: var(--good); } .dot.bad { background: var(--critical); } .dot.rec { background: var(--accent); }
 main.wrap { padding-top: 20px; padding-bottom: 48px; display: flex; flex-direction: column; gap: 16px; }
@@ -243,7 +247,9 @@ dialog.wide { width: min(940px, calc(100vw - 24px)); }
   border-left: 1px solid var(--border); border-top: 1px solid var(--border); transform: rotate(45deg); }
 .donate-wrap:hover .donate-tip, .donate:focus-visible + .donate-tip { opacity: 1; visibility: visible; transform: none; }
 @media (prefers-reduced-motion: reduce) { .donate-tip { transition: none; } }
-@media (max-width: 700px) { .donate-tip { right: auto; left: 0; } .donate-tip::before { right: auto; left: 22px; } }
+@media (max-width: 700px), (hover: none) { .donate-tip { display: none; } }   /* Handy: kein Überfahren, Tippen öffnet PayPal */
+@media (max-width: 700px) { #senderForm { grid-template-columns: minmax(0, 1fr) !important; } }
+@media (max-width: 700px) { header .wrap { gap: 6px 12px; padding-top: 8px; padding-bottom: 8px; } nav button, nav .navlink { padding: 6px 10px; } }
 .btn .count { font-size: 12px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-text); }
 code.ro { display: block; font-size: 13px; padding: 8px 10px; border-radius: 8px; border: 1px dashed var(--field-border); color: var(--ink);
   background: var(--hover); overflow-wrap: anywhere; }
@@ -256,7 +262,7 @@ code.ro { display: block; font-size: 13px; padding: 8px 10px; border-radius: 8px
 <body>
 <header>
   <div class="wrap">
-    <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#ce6c00"/><circle cx="16" cy="16" r="6" fill="none" stroke="#0b0b0b" stroke-width="2.5"/><circle cx="16" cy="16" r="2.5" fill="#0b0b0b"/></svg><span>Stream-Recorder</span></div>
+    <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#ce6c00"/><circle cx="16" cy="16" r="6" fill="none" stroke="#0b0b0b" stroke-width="2.5"/><circle cx="16" cy="16" r="2.5" fill="#0b0b0b"/></svg><span>Stream Recorder</span></div>
     <nav aria-label="Hauptmenü">
       <button data-view="jobs" aria-current="page">Aufträge</button>
       <button data-view="library">Aufnahmen</button>
@@ -267,7 +273,7 @@ code.ro { display: block; font-size: 13px; padding: 8px 10px; border-radius: 8px
     </nav>
     <div class="who">
       <span><span class="dot" id="schedDot"></span> <span id="schedText">verbinde …</span></span>
-      <span id="userBox">angemeldet als <b id="userName">–</b></span>
+      <span id="userBox" class="user"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6 8-6s8 2 8 6"/></svg><span class="sr">angemeldet als</span><b id="userName">–</b></span>
       <span class="donate-wrap"><a class="donate" id="donateBtn" href="https://paypal.me/breitide" target="_blank" rel="noopener" aria-describedby="donateTip"><svg class="i" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg><span data-en="Donate">Unterstützen</span></a><span class="donate-tip" id="donateTip" role="tooltip">Danke für Deine Unterstützung, über eine kleine Spende würde ich mich freuen.</span></span>
       <button class="btn small" id="logoutBtn" hidden>Abmelden</button>
     </div>
@@ -636,7 +642,7 @@ function translateDom(root) {
   root.querySelectorAll("input[type=text][value]").forEach(el => { const v = el.getAttribute("value"); if (SR_EN[v] != null) { el.setAttribute("value", SR_EN[v]); el.value = SR_EN[v]; } });
 }
 translateDom(document.body);
-document.title = t("Stream-Recorder");
+document.title = t("Stream Recorder");
 const LOC = LANG === "en" ? "en-GB" : "de-DE";
 const nf = new Intl.NumberFormat(LANG === "en" ? "en-US" : "de-DE");
 const num1 = x => x.toLocaleString(LANG === "en" ? "en-US" : "de-DE", { maximumFractionDigits: 1 });
@@ -766,9 +772,10 @@ async function refresh() {
     $("schedDot").className = "dot " + (st.stats.running ? "rec" : "ok");
     $("schedText").textContent = st.stats.running ? t("Aufnahme läuft ({n})", {n: st.stats.running}) : t("Scheduler aktiv");
     $("userName").textContent = st.user || "–";
+    $("userBox").title = t("angemeldet als") + " " + (st.user || "–");
     $("logoutBtn").hidden = st.auth !== "login";
     $("targetDir").textContent = st.settings.record_dir;
-    $("ver").textContent = t("Stream-Recorder") + " " + st.version;
+    $("ver").textContent = t("Stream Recorder") + " " + st.version;
     if (st.donate) $("donateBtn").href = st.donate;
     const w = st.warnings || [];
     $("warnBar").hidden = !w.length; $("warnBar").textContent = w.join(" · ");

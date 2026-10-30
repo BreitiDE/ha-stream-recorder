@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Stream-Recorder – Bedienungsanleitung</title>
+<title>Stream Recorder – Bedienungsanleitung</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
 /* Farbsystem: FARBDESIGN.md, Akzent #ce6c00 */
@@ -98,7 +98,7 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--grid)
 <body>
 <header class="top">
   <div class="in">
-    <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#ce6c00"/><circle cx="16" cy="16" r="6" fill="none" stroke="#0b0b0b" stroke-width="2.5"/><circle cx="16" cy="16" r="2.5" fill="#0b0b0b"/></svg>Stream-Recorder <span>· Bedienungsanleitung</span></div>
+    <div class="brand"><svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#ce6c00"/><circle cx="16" cy="16" r="6" fill="none" stroke="#0b0b0b" stroke-width="2.5"/><circle cx="16" cy="16" r="2.5" fill="#0b0b0b"/></svg>Stream Recorder <span>· Bedienungsanleitung</span></div>
     <a class="lang" href="manual?lang=en">English</a>
     <a class="back" href="./">← zur Oberfläche</a>
   </div>
@@ -130,7 +130,7 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--grid)
 
 <main>
 <h1>Bedienungsanleitung</h1>
-<p class="lead">Der Stream-Recorder ist eine App für Home Assistant. Er nimmt Internetradio-Streams zu festen Zeiten auf und legt sie als MP3-Dateien im Medienordner ab. Du bedienst ihn über die Seitenleiste von Home Assistant, auf dem Rechner, Tablet oder Handy.</p>
+<p class="lead">Der Stream Recorder ist eine App für Home Assistant. Er nimmt Internetradio-Streams zu festen Zeiten auf und legt sie als MP3-Dateien im Medienordner ab. Du bedienst ihn über die Seitenleiste von Home Assistant, auf dem Rechner, Tablet oder Handy.</p>
 
 <!-- ================================================================== -->
 <section id="ueberblick">
@@ -450,7 +450,7 @@ footer { color: var(--muted); font-size: 13px; border-top: 1px solid var(--grid)
 <h3>Ereignisse</h3>
 <p>Nach jeder Aufnahme feuert die App das Ereignis <code>stream_recorder_finished</code>, bei Fehlern zusätzlich <code>stream_recorder_error</code>. Die Daten: <code>title</code>, <code>sender</code>, <code>status</code>, <code>message</code>, <code>file</code>, <code>duration_s</code>, <code>started</code>, <code>ended</code>.</p>
 <p>Beispiel: Benachrichtigung bei einem Fehler:</p>
-<pre><code>alias: "Stream-Recorder: Fehler melden"
+<pre><code>alias: "Stream Recorder: Fehler melden"
 triggers:
   - trigger: event
     event_type: stream_recorder_error
@@ -529,7 +529,7 @@ data:
 </tbody></table></div>
 </section>
 
-<footer>Stream-Recorder 2.0.1 · Bedienungsanleitung · <a href="https://paypal.me/breitide">Spenden über PayPal</a></footer>
+<footer>Stream Recorder 2.0.2 · Bedienungsanleitung · <a href="https://paypal.me/breitide">Spenden über PayPal</a></footer>
 </main>
 </div>
 </body>
