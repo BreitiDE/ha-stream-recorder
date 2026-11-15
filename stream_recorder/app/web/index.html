@@ -410,7 +410,7 @@ code.ro { display: block; font-size: 13px; padding: 8px 10px; border-radius: 8px
         <label class="f">Unterordner und Dateiname (ohne Endung)<input type="text" name="cut_pattern" class="mono" spellcheck="false"></label>
         <div class="form-grid">
           <label class="f">Mindestlänge eines Titels (Sekunden)<input type="number" name="cut_min_len" min="0" max="3600" step="1"></label>
-          <label class="f">Verschiebung der Schnittpunkte (Sekunden, ± )<input type="number" name="cut_offset" min="-120" max="120" step="1"></label>
+          <label class="f">Verschiebung der Schnittpunkte (Sekunden, ± )<input type="number" name="cut_offset" min="-120" max="120" step="0.1"></label>
         </div>
         <label class="inline" style="font-size:14px;gap:8px"><input type="checkbox" name="cover_lookup"><span>Song-Cover beim Schneiden online suchen</span></label>
         <p class="hint" style="margin:-8px 0 0 24px">Sucht anhand von Interpret und Titel bei Deezer, dann bei Apple iTunes. Dafür werden Interpret und Titel an diese Dienste geschickt. Ohne Treffer bekommt der Titel das Cover der Aufnahme, falls sie eins hat.</p>
@@ -545,7 +545,7 @@ code.ro { display: block; font-size: 13px; padding: 8px 10px; border-radius: 8px
       <button class="icon-btn" type="button" data-close aria-label="Schließen"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <div class="dlg-body">
       <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
-        <label class="f">Verschiebung (Sekunden, ±)<input type="number" id="cutOffset" min="-120" max="120" step="1"></label>
+        <label class="f">Verschiebung (Sekunden, ±)<input type="number" id="cutOffset" min="-120" max="120" step="0.1"></label>
         <label class="f">Mindestlänge (Sekunden)<input type="number" id="cutMin" min="0" max="3600" step="1"></label>
       </div>
       <div class="prev-wrap" style="max-height:420px"><table id="cutTbl"></table></div>
@@ -692,6 +692,9 @@ const dm = d => LANG === "en" ? `${d.getDate()} ${MON[d.getMonth()]}` : `${pad(d
 function fmtDT(ts) { const d = new Date(ts * 1000); return `${WD[d.getDay()]} ${dm(d)} ${pad(d.getHours())}:${pad(d.getMinutes())}`; }
 function fmtT(ts) { const d = new Date(ts * 1000); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }
 function fmtDur(s) { if (s == null) return "–"; s = Math.round(s); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = s%60; return h ? `${h}:${pad(m)}:${pad(x)}` : `${m}:${pad(x)}`; }
+// Schnittzeiten mit Zehnteln: 4:39,5 (Englisch 4:39.5)
+function fmtCut(s) { if (s == null) return "–"; const d = Math.round(s * 10), h = Math.floor(d / 36000), m = Math.floor(d % 36000 / 600), x = Math.floor(d % 600 / 10), z = d % 10, sep = LANG === "en" ? "." : ",";
+  return (h ? `${h}:${pad(m)}` : `${m}`) + `:${pad(x)}${sep}${z}`; }
 function fmtMin(m) { m = Math.round(m); return m >= 60 ? `${Math.floor(m/60)} h${m%60 ? " " + m%60 + " min" : ""}` : `${m} min`; }
 function fmtBytes(b) { if (b == null) return "–"; if (b >= 1e9) return num1(b/1e9) + " GB"; if (b >= 1e6) return Math.round(b/1e6) + " MB"; if (b >= 1e3) return Math.round(b/1e3) + " kB"; return b + " B"; }
 function toLocalInput(ts) { const d = new Date(ts * 1000); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
@@ -1183,8 +1186,8 @@ function renderCut() {
       rows += `<tr class="${on ? "" : "off"}" data-f="${esc(f.path)}" data-i="${x.i}">
         <td><input type="checkbox" data-cut ${on ? "checked" : ""} aria-label="${t("Titel {n} schneiden", {n: x.i + 1})}"></td>
         <td><button class="playbtn" type="button" data-cplay="${x.start}" aria-label="${t("Ab hier abspielen")}">${ICON_PLAY}</button></td>
-        <td class="nw mono" style="font-size:12px">${fmtDur(x.start)} – ${fmtDur(x.end)}</td>
-        <td class="num">${fmtDur(x.dur)}</td>
+        <td class="nw mono" style="font-size:12px">${fmtCut(x.start)} – ${fmtCut(x.end)}</td>
+        <td class="num">${fmtCut(x.dur)}</td>
         <td><span class="t">${esc(x.artist || "–")}</span> – ${esc(x.title)}</td>
         <td>${x.reason ? `<span class="note ${on ? "ok" : "same"}">${esc(x.reason)}</span>` : (on ? `<span class="note ok">${t("wird geschnitten")}</span>` : `<span class="note same">${t("abgewählt")}</span>`)}</td></tr>`;
     });

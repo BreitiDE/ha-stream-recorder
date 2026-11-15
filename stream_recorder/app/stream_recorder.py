@@ -49,7 +49,7 @@ import i18n  # noqa: E402
 import library as lib  # noqa: E402
 from i18n import _  # noqa: E402
 
-__version__ = "2.0.2"
+__version__ = "2.0.3"
 BASE = Path(__file__).resolve().parent
 WEB = BASE / "web"
 log = logging.getLogger("stream-recorder")
@@ -1431,7 +1431,7 @@ async def api_settings(request: Request) -> JSONResponse:
                 return err(_("{label} ungültig", label=label))
             if not lo <= v <= hi:
                 return err(_("{label} muss zwischen {lo} und {hi} Sekunden liegen", label=label, lo=lo, hi=hi))
-            db.set_setting(k, v)
+            db.set_setting(k, round(v, 1) if k == "cut_offset" else v)     # Verschiebung in Zehntelsekunden
     if "trash_days" in d:
         try:
             v = int(float(d["trash_days"] or 0))
@@ -1839,7 +1839,7 @@ def cut_sender(it: dict, h: dict | None) -> str:
 
 def cut_params(d: dict) -> tuple[float, float]:
     try:
-        offset = float(d["offset"]) if d.get("offset") not in (None, "") else float(db.setting("cut_offset"))
+        offset = round(float(d["offset"]) if d.get("offset") not in (None, "") else float(db.setting("cut_offset")), 1)
         min_len = float(d["min_len"]) if d.get("min_len") not in (None, "") else float(db.setting("cut_min_len"))
     except (TypeError, ValueError):
         raise lib.LibraryError(_("Verschiebung oder Mindestlänge ungültig"))
